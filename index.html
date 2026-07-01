@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FrostOS</title>
+  <meta name="description" content="Your arctic hub for movies, browser tools and more.">
+  <link rel="icon" href="penguin.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── BOOT SCREEN ─────────────────────────────────────────── -->
+<div id="boot-screen">
+  <div id="boot-penguin">
+    <svg viewBox="0 0 64 64" width="88" height="88" fill="none">
+      <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+      <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+      <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+      <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+      <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+      <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+      <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+      <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+      <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+      <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+      <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+    </svg>
+  </div>
+  <h1 id="boot-title">FROST<span>OS</span></h1>
+  <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
+  <p id="boot-msg">Loading FrostOS...</p>
+</div>
+
+<!-- ── SNOWFLAKES ──────────────────────────────────────────── -->
+<div id="snow-container"></div>
+
+<!-- ── AURORA ──────────────────────────────────────────────── -->
+<div id="aurora">
+  <div class="aurora-blob" id="ab1"></div>
+  <div class="aurora-blob" id="ab2"></div>
+  <div class="aurora-blob" id="ab3"></div>
+</div>
+
+<!-- ── APP ─────────────────────────────────────────────────── -->
+<div id="app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <svg viewBox="0 0 64 64" width="28" height="28" fill="none">
+        <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+        <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+        <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+        <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+        <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+        <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+        <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+        <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+        <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+        <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+        <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+      </svg>
+      <span class="brand-name">Frost<span class="brand-accent">OS</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-page="home">
+        <i class="fa-solid fa-house"></i><span>Home</span>
+      </button>
+      <button class="nav-btn" data-page="movies">
+        <i class="fa-solid fa-film"></i><span>Movies</span>
+      </button>
+      <button class="nav-btn" data-page="browser">
+        <i class="fa-solid fa-globe"></i><span>Browser</span>
+      </button>
+      <button class="nav-btn" data-page="settings">
+        <i class="fa-solid fa-gear"></i><span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="glass-card status-pill">
+        <span class="status-dot"></span>
+        <div>
+          <div class="status-label">Proxy: CF Workers</div>
+          <div class="status-sub">Connected</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+    <header id="topbar">
+      <div class="topbar-status">
+        <span class="status-dot"></span>
+        Arctic Network Active
+      </div>
+    </header>
+
+    <main id="viewport">
+
+      <!-- HOME -->
+      <section id="page-home" class="page active">
+        <div class="home-center">
+          <div class="home-logo">
+            <svg viewBox="0 0 64 64" width="72" height="72" fill="none">
+              <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+              <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+              <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+              <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+              <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+              <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+              <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+              <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+              <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+              <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+              <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+            </svg>
+            <h1 class="home-title">Frost<span>OS</span></h1>
+          </div>
+
+          <div class="home-search glass-card">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="home-search-input" placeholder="Search the web">
+            <button id="home-search-btn"><i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+
+          <div class="home-pills">
+            <button class="pill" data-page="movies"><i class="fa-solid fa-film"></i> Movies</button>
+            <button class="pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
+            <button class="pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+          </div>
+
+          <div class="home-bulletin glass-card">
+            <div class="bulletin-col">
+              <div class="bulletin-label cyan">Frost Bulletin</div>
+              <p>Arctic Network active.<br>Enjoy the site! 🐧</p>
+            </div>
+            <div class="bulletin-divider"></div>
+            <div class="bulletin-col">
+              <div class="bulletin-label green">Status</div>
+              <p><span class="status-dot inline"></span> All systems online</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOVIES -->
+      <section id="page-movies" class="page">
+        <div class="page-header">
+          <div class="eyebrow purple">Movies</div>
+          <h2>Browse &amp; Watch</h2>
+        </div>
+        <div class="glass-card iframe-shell">
+          <div class="iframe-placeholder" id="movies-placeholder">
+            <i class="fa-solid fa-film"></i>
+            <p>Movie player goes here.</p>
+            <small>Configure a source in Settings → Movie Source</small>
+          </div>
+          <iframe id="movies-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
+        </div>
+      </section>
+
+      <!-- BROWSER -->
+      <section id="page-browser" class="page">
+        <div class="page-header">
+          <div class="eyebrow cyan">Browser</div>
+          <h2>Frost Browser</h2>
+        </div>
+        <div class="glass-card browser-shell">
+          <!-- Tab strip -->
+          <div class="browser-tabs" id="browser-tabs">
+            <div class="b-tab active" data-id="1">
+              <i class="fa-solid fa-snowflake"></i>
+              <span>New Tab</span>
+              <i class="fa-solid fa-xmark tab-close"></i>
+            </div>
+            <button id="add-tab-btn"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <!-- Address bar -->
+          <div class="browser-bar">
+            <button class="bar-btn" id="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="bar-btn" id="fwd-btn"><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="bar-btn" id="reload-btn"><i class="fa-solid fa-rotate-right"></i></button>
+            <div class="address-wrap">
+              <i class="fa-solid fa-lock addr-lock"></i>
+              <input type="text" id="browser-addr" placeholder="Search or enter address" value="https://">
+              <button id="go-btn"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+          <!-- Viewport -->
+          <div class="browser-viewport">
+            <div id="browser-placeholder">
+              <i class="fa-solid fa-globe"></i>
+              <p>Enter an address above.</p>
+            </div>
+            <iframe id="browser-iframe" src="about:blank" class="hidden"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="page-settings" class="page">
+        <div class="page-header">
+          <div class="eyebrow green">Preferences</div>
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-grid">
+          <!-- General -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-sliders"></i> General</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Tab Cloaking</div>
+                <div class="setting-desc">Disguise the browser tab</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="tab-cloak-toggle"><span class="slider"></span></label>
+            </div>
+            <div class="setting-row cloak-options hidden" id="cloak-options">
+              <select id="cloak-select" class="frost-select">
+                <option value="none">Disabled</option>
+                <option value="google">Google Search</option>
+                <option value="drive">Google Drive</option>
+                <option value="classroom">Google Classroom</option>
+                <option value="canvas">Canvas LMS</option>
+                <option value="gmail">Gmail</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Search Engine</div>
+                <div class="setting-desc">Default for home search</div>
+              </div>
+              <select id="engine-select" class="frost-select">
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+                <option value="duckduckgo">DuckDuckGo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Proxy -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-network-wired"></i> Proxy</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Proxy Mode</div>
+                <div class="setting-desc">Use default or bring your own</div>
+              </div>
+              <select id="proxy-select" class="frost-select">
+                <option value="default">CF Workers</option>
+                <option value="byop">Custom (BYOP)</option>
+              </select>
+            </div>
+            <div class="setting-row hidden" id="byop-row">
+              <input type="text" id="byop-input" class="frost-input" placeholder="Enter custom proxy URL...">
+            </div>
+          </div>
+
+          <!-- Account -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-user"></i> Account</div>
+            <div class="account-block">
+              <div class="account-avatar">
+                <svg viewBox="0 0 64 64" width="32" height="32" fill="none">
+                  <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+                  <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+                  <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+                  <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+                  <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+                  <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+                  <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+                  <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+                  <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+                  <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+                  <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+                </svg>
+              </div>
+              <div>
+                <div class="account-name">Guest Penguin</div>
+                <div class="account-sub">Not signed in</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-bell"></i> Notifications</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">System Alerts</div>
+                <div class="setting-desc">Show FrostOS updates</div>
+              </div>
+              <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">New Releases</div>
+                <div class="setting-desc">Get notified of new content</div>
+              </div>
+              <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
