@@ -62,6 +62,11 @@ function showPage(id) {
   const btn  = document.querySelector(`.nav-btn[data-page="${id}"]`);
   if (page) page.classList.add('active');
   if (btn)  btn.classList.add('active');
+
+  // ✨ ADDED CODE: If the user navigates to the movies page, load the movie player proxy!
+  if (id === 'movies') {
+    loadMoviePlayer();
+  }
 }
 
 // Sidebar nav
@@ -73,6 +78,25 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 document.querySelectorAll('.pill[data-page]').forEach(pill => {
   pill.addEventListener('click', () => showPage(pill.dataset.page));
 });
+
+// ✨ ADDED CODE: Define the Movie Player loader right below navigation logic
+function loadMoviePlayer() {
+  const PROXY_URL = "https://workers.dev"; // 👈 Put your real CF Worker URL here
+  const TARGET_SITE = "https://toustream.xyz";
+  
+  const moviesPlaceholder = document.getElementById('movies-placeholder');
+  const moviesIframe = document.getElementById('movies-iframe');
+  
+  if (moviesIframe && moviesPlaceholder) {
+    moviesPlaceholder.classList.add('hidden');
+    moviesIframe.classList.remove('hidden');
+    
+    // Only load it if it's currently blank to prevent resetting their stream if they click back/forth
+    if (moviesIframe.src === 'about:blank' || moviesIframe.src === '') {
+      moviesIframe.src = PROXY_URL + encodeURIComponent(TARGET_SITE);
+    }
+  }
+}
 
 /* ── Home search ──────────────────────────────────────────── */
 const homeInput  = document.getElementById('home-search-input');
