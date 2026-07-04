@@ -1,624 +1,321 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FrostOS</title>
+  <meta name="description" content="Your arctic hub for movies, browser tools and more.">
+  <link rel="icon" href="penguin.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
 
-export const Route = createFileRoute("/")({
-  component: FrostOS,
-});
+  <!-- Ultraviolet client bundle + config (must load before script.js) -->
+  <script src="uv/uv.bundle.js"></script>
+  <script src="uv/uv.config.js"></script>
+</head>
+<body>
 
-type PageId = "home" | "movies" | "browser" | "settings";
-type Tab = { id: number; title: string };
-
-const ENGINES: Record<string, string> = {
-  google: "https://www.google.com/search?q=",
-  bing: "https://www.bing.com/search?q=",
-  duckduckgo: "https://duckduckgo.com/?q=",
-};
-
-const CLOAK_DATA: Record<string, { title: string; icon: string }> = {
-  none: { title: "FrostOS", icon: "/favicon.ico" },
-  google: { title: "Google", icon: "https://www.google.com/favicon.ico" },
-  drive: { title: "Google Drive", icon: "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" },
-  classroom: { title: "Google Classroom", icon: "https://ssl.gstatic.com/classroom/favicon.png" },
-  canvas: { title: "Canvas", icon: "https://du11hjcvx0ubn.cloudfront.net/dist/images/favicon-e10d657a73.ico" },
-  gmail: { title: "Gmail", icon: "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" },
-};
-
-/* ── Pixel penguin SVG (shared) ─────────────────────────── */
-function PixelPenguin({ size = 64 }: { size?: number }) {
-  return (
-    <svg viewBox="0 0 64 64" width={size} height={size} fill="none" shapeRendering="crispEdges">
-      {/* body */}
-      <rect x="16" y="20" width="32" height="40" fill="#0F2138" />
-      {/* belly */}
-      <rect x="20" y="28" width="24" height="28" fill="#F4FAFC" />
-      {/* head */}
-      <rect x="18" y="4" width="28" height="22" fill="#0F2138" />
-      {/* face */}
-      <rect x="22" y="8" width="20" height="14" fill="#F4FAFC" />
-      {/* eyes */}
-      <rect x="22" y="10" width="6" height="6" fill="#0A1628" />
-      <rect x="36" y="10" width="6" height="6" fill="#0A1628" />
-      {/* beak */}
-      <rect x="26" y="18" width="12" height="6" fill="#F5A623" />
-      {/* wings */}
-      <rect x="10" y="24" width="6" height="20" fill="#0F2138" />
-      <rect x="48" y="24" width="6" height="20" fill="#0F2138" />
-      {/* feet */}
-      <rect x="20" y="58" width="10" height="6" fill="#F5A623" />
-      <rect x="34" y="58" width="10" height="6" fill="#F5A623" />
+<!-- ── BOOT SCREEN ─────────────────────────────────────────── -->
+<div id="boot-screen">
+  <div id="boot-penguin">
+    <svg viewBox="0 0 64 64" width="88" height="88" fill="none">
+      <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+      <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+      <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+      <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+      <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+      <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+      <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+      <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+      <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+      <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+      <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
     </svg>
-  );
-}
+  </div>
+  <h1 id="boot-title">FROST<span>OS</span></h1>
+  <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
+  <p id="boot-msg">Loading FrostOS...</p>
+</div>
 
-function FrostOS() {
-  const [booting, setBooting] = useState(true);
-  const [bootProgress, setBootProgress] = useState(0);
-  const [bootMsgIdx, setBootMsgIdx] = useState(0);
-  const [fadeBoot, setFadeBoot] = useState(false);
+<!-- ── SNOWFLAKES ──────────────────────────────────────────── -->
+<div id="snow-container"></div>
 
-  const [page, setPage] = useState<PageId>("home");
+<!-- ── AURORA ──────────────────────────────────────────────── -->
+<div id="aurora">
+  <div class="aurora-blob" id="ab1"></div>
+  <div class="aurora-blob" id="ab2"></div>
+  <div class="aurora-blob" id="ab3"></div>
+</div>
 
-  // Home / search / settings
-  const [homeQuery, setHomeQuery] = useState("");
-  const [engine, setEngine] = useState<string>("google");
+<!-- ── APP ─────────────────────────────────────────────────── -->
+<div id="app" class="hidden">
 
-  // Movies
-  const [moviesLoaded, setMoviesLoaded] = useState(false);
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <svg viewBox="0 0 64 64" width="28" height="28" fill="none">
+        <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+        <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+        <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+        <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+        <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+        <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+        <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+        <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+        <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+        <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+        <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+      </svg>
+      <span class="brand-name">Frost<span class="brand-accent">OS</span></span>
+    </div>
 
-  // Browser
-  const [tabs, setTabs] = useState<Tab[]>([{ id: 1, title: "New Tab" }]);
-  const [activeTab, setActiveTab] = useState(1);
-  const [addr, setAddr] = useState("https://");
-  const [browserUrl, setBrowserUrl] = useState<string | null>(null);
-  const browserIframeRef = useRef<HTMLIFrameElement | null>(null);
-  const tabCounterRef = useRef(1);
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-page="home">
+        <i class="fa-solid fa-house"></i><span>Home</span>
+      </button>
+      <button class="nav-btn" data-page="movies">
+        <i class="fa-solid fa-film"></i><span>Movies</span>
+      </button>
+      <button class="nav-btn" data-page="browser">
+        <i class="fa-solid fa-globe"></i><span>Browser</span>
+      </button>
+      <button class="nav-btn" data-page="settings">
+        <i class="fa-solid fa-gear"></i><span>Settings</span>
+      </button>
+    </nav>
 
-  // Settings
-  const [cloak, setCloak] = useState(false);
-  const [cloakValue, setCloakValue] = useState("none");
-  const [proxy, setProxy] = useState<"default" | "byop">("default");
-  const [byop, setByop] = useState("");
-  const [notifSystem, setNotifSystem] = useState(true);
-  const [notifReleases, setNotifReleases] = useState(false);
-
-  const BOOT_MSGS = [
-    "Loading FrostOS...",
-    "Preparing Glacier Systems...",
-    "Connecting to Arctic Network...",
-    "Calibrating Aurora Display...",
-  ];
-
-  /* boot sequence */
-  useEffect(() => {
-    if (!booting) return;
-    const msg = setInterval(() => setBootMsgIdx((i) => (i + 1) % BOOT_MSGS.length), 900);
-    const bar = setInterval(() => {
-      setBootProgress((p) => {
-        const next = Math.min(p + Math.random() * 15 + 6, 100);
-        if (next >= 100) {
-          clearInterval(bar);
-          clearInterval(msg);
-          setTimeout(() => setFadeBoot(true), 300);
-          setTimeout(() => setBooting(false), 800);
-        }
-        return next;
-      });
-    }, 210);
-    return () => {
-      clearInterval(msg);
-      clearInterval(bar);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* load saved engine */
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("frostos-engine");
-      if (saved) setEngine(saved);
-    } catch {}
-  }, []);
-
-  /* apply cloak */
-  useEffect(() => {
-    const d = CLOAK_DATA[cloak ? cloakValue : "none"];
-    if (typeof document === "undefined") return;
-    document.title = d.title;
-    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
-    }
-    link.href = d.icon;
-  }, [cloak, cloakValue]);
-
-  /* snowflakes */
-  const snowflakes = Array.from({ length: 14 }, (_, i) => {
-    const size = 8 + (i % 3) * 4;
-    return (
-      <div
-        key={i}
-        className="snowflake"
-        style={{
-          left: `${(i * 7.3) % 100}%`,
-          fontSize: `${size}px`,
-          animationDuration: `${14 + (i % 5) * 3}s`,
-          animationDelay: `${i * 1.3}s`,
-        }}
-      >
-        ❄
-      </div>
-    );
-  });
-
-  /* actions */
-  function goPage(id: PageId) {
-    setPage(id);
-    if (id === "movies") setMoviesLoaded(true);
-  }
-
-  function doHomeSearch() {
-    const q = homeQuery.trim();
-    if (!q) return;
-    const url = ENGINES[engine] + encodeURIComponent(q);
-    setPage("browser");
-    loadBrowserUrl(url);
-  }
-
-  function proxied(url: string) {
-    if (proxy === "byop" && byop) {
-      return byop.replace(/\/+$/, "") + encodeURIComponent(url);
-    }
-    return "/api/proxy?url=" + encodeURIComponent(url);
-  }
-
-  function loadBrowserUrl(rawUrl: string) {
-    let url = rawUrl.trim();
-    if (!url) return;
-    if (!/^https?:\/\//i.test(url) && !url.startsWith("about:")) {
-      url = ENGINES[engine] + encodeURIComponent(url);
-    }
-    setAddr(url);
-    setBrowserUrl(proxied(url));
-  }
-
-  function addTab() {
-    tabCounterRef.current += 1;
-    const id = tabCounterRef.current;
-    setTabs((t) => [...t, { id, title: "New Tab" }]);
-    setActiveTab(id);
-    setBrowserUrl(null);
-    setAddr("https://");
-  }
-
-  function selectTab(id: number) {
-    setActiveTab(id);
-    setBrowserUrl(null);
-    setAddr("https://");
-  }
-
-  function closeTab(id: number, e: React.MouseEvent) {
-    e.stopPropagation();
-    setTabs((t) => {
-      if (t.length <= 1) return t;
-      const next = t.filter((x) => x.id !== id);
-      if (id === activeTab) {
-        const last = next[next.length - 1];
-        setActiveTab(last.id);
-        setBrowserUrl(null);
-        setAddr("https://");
-      }
-      return next;
-    });
-  }
-
-  // Listen for nav messages from the proxied page (link clicks inside iframe)
-  useEffect(() => {
-    function onMsg(e: MessageEvent) {
-      const d = e.data;
-      if (d && typeof d === "object" && d.__frost === "nav" && typeof d.url === "string") {
-        setAddr(d.url);
-      }
-    }
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, []);
-
-  const moviesTarget = "https://toustream.xyz";
-  const moviesSrc = proxied(moviesTarget);
-
-
-  return (
-    <>
-      {/* Boot screen */}
-      {booting && (
-        <div id="boot-screen" className={fadeBoot ? "fade-out" : ""}>
-          <div id="boot-penguin">
-            <PixelPenguin size={80} />
-          </div>
-          <h1 id="boot-title">
-            FROST<span>OS</span>
-          </h1>
-          <div id="boot-bar-wrap">
-            <div id="boot-bar" style={{ width: `${bootProgress}%` }} />
-          </div>
-          <p id="boot-msg">{BOOT_MSGS[bootMsgIdx]}</p>
+    <div class="sidebar-footer">
+      <div class="glass-card status-pill">
+        <span class="status-dot"></span>
+        <div>
+          <div class="status-label">Proxy: Ultraviolet</div>
+          <div class="status-sub" id="proxy-status-sub">Connecting…</div>
         </div>
-      )}
+      </div>
+    </div>
+  </aside>
 
-      {/* Snow */}
-      <div id="snow-container">{!booting && snowflakes}</div>
+  <!-- MAIN -->
+  <div id="main">
+    <header id="topbar">
+      <div class="topbar-status">
+        <span class="status-dot"></span>
+        Arctic Network Active
+      </div>
+    </header>
 
-      {/* App */}
-      <div id="app" className={booting ? "hidden" : ""}>
-        {/* Sidebar */}
-        <aside id="sidebar">
-          <div className="sidebar-brand">
-            <PixelPenguin size={28} />
-            <span className="brand-name">
-              Frost<span className="accent">OS</span>
-            </span>
+    <main id="viewport">
+
+      <!-- HOME -->
+      <section id="page-home" class="page active">
+        <div class="home-center">
+          <div class="home-logo">
+            <svg viewBox="0 0 64 64" width="72" height="72" fill="none">
+              <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+              <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+              <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+              <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+              <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+              <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+              <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+              <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+              <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+              <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+              <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+            </svg>
+            <h1 class="home-title">Frost<span>OS</span></h1>
           </div>
 
-          <nav className="sidebar-nav">
-            {(
-              [
-                ["home", "fa-house", "Home"],
-                ["movies", "fa-film", "Movies"],
-                ["browser", "fa-globe", "Browser"],
-                ["settings", "fa-gear", "Settings"],
-              ] as [PageId, string, string][]
-            ).map(([id, icon, label]) => (
-              <button
-                key={id}
-                className={`nav-btn ${page === id ? "active" : ""}`}
-                onClick={() => goPage(id)}
-              >
-                <i className={`fa-solid ${icon}`}></i>
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
+          <div class="home-search glass-card">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="home-search-input" placeholder="Search the web">
+            <button id="home-search-btn"><i class="fa-solid fa-arrow-right"></i></button>
+          </div>
 
-          <div className="sidebar-footer">
-            <div className="pixel-card status-pill">
-              <span className="status-dot"></span>
+          <div class="home-pills">
+            <button class="pill" data-page="movies"><i class="fa-solid fa-film"></i> Movies</button>
+            <button class="pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
+            <button class="pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+          </div>
+
+          <div class="home-bulletin glass-card">
+            <div class="bulletin-col">
+              <div class="bulletin-label cyan">Frost Bulletin</div>
+              <p>Arctic Network active.<br>Enjoy the site! 🐧</p>
+            </div>
+            <div class="bulletin-divider"></div>
+            <div class="bulletin-col">
+              <div class="bulletin-label green">Status</div>
+              <p><span class="status-dot inline"></span> All systems online</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOVIES -->
+      <section id="page-movies" class="page">
+        <div class="page-header">
+          <div class="eyebrow purple">Movies</div>
+          <h2>Browse &amp; Watch</h2>
+        </div>
+        <div class="glass-card iframe-shell">
+          <div class="iframe-placeholder" id="movies-placeholder">
+            <i class="fa-solid fa-film"></i>
+            <p>Movie player goes here.</p>
+            <small>Configure a source in Settings → Movie Source</small>
+          </div>
+          <iframe id="movies-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
+        </div>
+      </section>
+
+      <!-- BROWSER -->
+      <section id="page-browser" class="page">
+        <div class="page-header">
+          <div class="eyebrow cyan">Browser</div>
+          <h2>Frost Browser</h2>
+        </div>
+        <div class="glass-card browser-shell">
+          <!-- Tab strip -->
+          <div class="browser-tabs" id="browser-tabs">
+            <div class="b-tab active" data-id="1">
+              <i class="fa-solid fa-snowflake"></i>
+              <span>New Tab</span>
+              <i class="fa-solid fa-xmark tab-close"></i>
+            </div>
+            <button id="add-tab-btn"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <!-- Address bar -->
+          <div class="browser-bar">
+            <button class="bar-btn" id="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="bar-btn" id="fwd-btn"><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="bar-btn" id="reload-btn"><i class="fa-solid fa-rotate-right"></i></button>
+            <div class="address-wrap">
+              <i class="fa-solid fa-lock addr-lock"></i>
+              <input type="text" id="browser-addr" placeholder="Search or enter address" value="https://">
+              <button id="go-btn"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+          <!-- Viewport -->
+          <div class="browser-viewport">
+            <div id="browser-placeholder">
+              <i class="fa-solid fa-globe"></i>
+              <p>Enter an address above.</p>
+            </div>
+            <iframe id="browser-iframe" src="about:blank" class="hidden"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="page-settings" class="page">
+        <div class="page-header">
+          <div class="eyebrow green">Preferences</div>
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-grid">
+          <!-- General -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-sliders"></i> General</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Tab Cloaking</div>
+                <div class="setting-desc">Disguise the browser tab</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="tab-cloak-toggle"><span class="slider"></span></label>
+            </div>
+            <div class="setting-row cloak-options hidden" id="cloak-options">
+              <select id="cloak-select" class="frost-select">
+                <option value="none">Disabled</option>
+                <option value="google">Google Search</option>
+                <option value="drive">Google Drive</option>
+                <option value="classroom">Google Classroom</option>
+                <option value="canvas">Canvas LMS</option>
+                <option value="gmail">Gmail</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Search Engine</div>
+                <div class="setting-desc">Default for home search</div>
+              </div>
+              <select id="engine-select" class="frost-select">
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+                <option value="duckduckgo">DuckDuckGo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Proxy -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-network-wired"></i> Proxy</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Bare Server</div>
+                <div class="setting-desc">Ultraviolet backend URL</div>
+              </div>
+              <select id="proxy-select" class="frost-select">
+                <option value="default">Default (tomp.io)</option>
+                <option value="byop">Custom (BYOB)</option>
+              </select>
+            </div>
+            <div class="setting-row hidden" id="byop-row">
+              <input type="text" id="byop-input" class="frost-input" placeholder="https://your-bare-server.example.com/">
+            </div>
+          </div>
+
+          <!-- Account -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-user"></i> Account</div>
+            <div class="account-block">
+              <div class="account-avatar">
+                <svg viewBox="0 0 64 64" width="32" height="32" fill="none">
+                  <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
+                  <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
+                  <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
+                  <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
+                  <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
+                  <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
+                  <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
+                  <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
+                  <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
+                  <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+                  <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
+                </svg>
+              </div>
               <div>
-                <div className="status-label">Proxy: CF Workers</div>
-                <div className="status-sub">Connected</div>
+                <div class="account-name">Guest Penguin</div>
+                <div class="account-sub">Not signed in</div>
               </div>
             </div>
           </div>
-        </aside>
 
-        {/* Main */}
-        <div id="main">
-          <header id="topbar">
-            <div className="topbar-status">
-              <span className="status-dot"></span>
-              Arctic Network Active
+          <!-- Notifications -->
+          <div class="glass-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-bell"></i> Notifications</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">System Alerts</div>
+                <div class="setting-desc">Show FrostOS updates</div>
+              </div>
+              <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
             </div>
-          </header>
-
-          <main id="viewport">
-            {/* HOME */}
-            <section id="page-home" className={`page ${page === "home" ? "active" : ""}`}>
-              <div className="home-center">
-                <div className="home-logo penguin-bob">
-                  <PixelPenguin size={72} />
-                  <h1 className="home-title">
-                    Frost<span>OS</span>
-                  </h1>
-                </div>
-
-                <div className="pixel-search-wrap">
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                  <input
-                    type="text"
-                    placeholder="Search the web"
-                    value={homeQuery}
-                    onChange={(e) => setHomeQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && doHomeSearch()}
-                  />
-                  <button id="home-search-btn" onClick={doHomeSearch}>
-                    <i className="fa-solid fa-arrow-right"></i>
-                  </button>
-                </div>
-
-                <div className="home-pills">
-                  <button className="pixel-pill" onClick={() => goPage("movies")}>
-                    <i className="fa-solid fa-film"></i> Movies
-                  </button>
-                  <button className="pixel-pill" onClick={() => goPage("browser")}>
-                    <i className="fa-solid fa-globe"></i> Browser
-                  </button>
-                  <button className="pixel-pill" onClick={() => goPage("settings")}>
-                    <i className="fa-solid fa-gear"></i> Settings
-                  </button>
-                </div>
-
-                <div className="pixel-card home-bulletin">
-                  <div className="bulletin-col">
-                    <div className="bulletin-label cyan">Frost Bulletin</div>
-                    <p>
-                      Arctic Network active.
-                      <br />
-                      Enjoy the site! 🐧
-                    </p>
-                  </div>
-                  <div className="bulletin-divider"></div>
-                  <div className="bulletin-col">
-                    <div className="bulletin-label green">Status</div>
-                    <p>
-                      <span className="status-dot inline"></span> All systems online
-                    </p>
-                  </div>
-                </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">New Releases</div>
+                <div class="setting-desc">Get notified of new content</div>
               </div>
-            </section>
-
-            {/* MOVIES */}
-            <section id="page-movies" className={`page ${page === "movies" ? "active" : ""}`}>
-              <div className="page-header">
-                <div className="eyebrow purple">Movies</div>
-                <h2>Browse &amp; Watch</h2>
-              </div>
-              <div className="pixel-card iframe-shell">
-                {!moviesLoaded ? (
-                  <div className="iframe-placeholder">
-                    <i className="fa-solid fa-film"></i>
-                    <p>Movie player goes here.</p>
-                    <small>Configure a source in Settings → Proxy</small>
-                  </div>
-                ) : (
-                  <iframe src={moviesSrc} allowFullScreen title="Movies" />
-                )}
-              </div>
-            </section>
-
-            {/* BROWSER */}
-            <section id="page-browser" className={`page ${page === "browser" ? "active" : ""}`}>
-              <div className="page-header">
-                <div className="eyebrow cyan">Browser</div>
-                <h2>Frost Browser</h2>
-              </div>
-              <div className="pixel-card browser-shell">
-                <div className="browser-tabs" id="browser-tabs">
-                  {tabs.map((t) => (
-                    <div
-                      key={t.id}
-                      className={`b-tab ${activeTab === t.id ? "active" : ""}`}
-                      onClick={() => selectTab(t.id)}
-                    >
-                      <i className="fa-solid fa-snowflake"></i>
-                      <span>{t.title}</span>
-                      <i
-                        className="fa-solid fa-xmark tab-close"
-                        onClick={(e) => closeTab(t.id, e)}
-                      ></i>
-                    </div>
-                  ))}
-                  <button id="add-tab-btn" onClick={addTab}>
-                    <i className="fa-solid fa-plus"></i>
-                  </button>
-                </div>
-
-                <div className="browser-bar">
-                  <button
-                    className="bar-btn"
-                    onClick={() => {
-                      try {
-                        browserIframeRef.current?.contentWindow?.history.back();
-                      } catch {}
-                    }}
-                  >
-                    <i className="fa-solid fa-arrow-left"></i>
-                  </button>
-                  <button
-                    className="bar-btn"
-                    onClick={() => {
-                      try {
-                        browserIframeRef.current?.contentWindow?.history.forward();
-                      } catch {}
-                    }}
-                  >
-                    <i className="fa-solid fa-arrow-right"></i>
-                  </button>
-                  <button
-                    className="bar-btn"
-                    onClick={() => {
-                      if (browserIframeRef.current && browserUrl) {
-                        browserIframeRef.current.src = browserUrl;
-                      }
-                    }}
-                  >
-                    <i className="fa-solid fa-rotate-right"></i>
-                  </button>
-                  <div className="address-wrap">
-                    <i className="fa-solid fa-lock addr-lock"></i>
-                    <input
-                      type="text"
-                      value={addr}
-                      onChange={(e) => setAddr(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && loadBrowserUrl(addr)}
-                      placeholder="Search or enter address"
-                    />
-                    <button id="go-btn" onClick={() => loadBrowserUrl(addr)}>
-                      <i className="fa-solid fa-arrow-right"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="browser-viewport">
-                  {!browserUrl ? (
-                    <div id="browser-placeholder">
-                      <i className="fa-solid fa-globe"></i>
-                      <p>Enter an address above.</p>
-                    </div>
-                  ) : (
-                    <iframe
-                      id="browser-iframe"
-                      ref={browserIframeRef}
-                      src={browserUrl}
-                      title="Frost Browser"
-                    />
-                  )}
-                </div>
-              </div>
-            </section>
-
-            {/* SETTINGS */}
-            <section id="page-settings" className={`page ${page === "settings" ? "active" : ""}`}>
-              <div className="page-header">
-                <div className="eyebrow green">Preferences</div>
-                <h2>Settings</h2>
-              </div>
-              <div className="settings-grid">
-                {/* General */}
-                <div className="pixel-card settings-card">
-                  <div className="settings-card-title">
-                    <i className="fa-solid fa-sliders"></i> General
-                  </div>
-                  <div className="setting-row">
-                    <div className="setting-info">
-                      <div className="setting-name">Tab Cloaking</div>
-                      <div className="setting-desc">Disguise the browser tab</div>
-                    </div>
-                    <label className="toggle">
-                      <input
-                        type="checkbox"
-                        checked={cloak}
-                        onChange={(e) => setCloak(e.target.checked)}
-                      />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
-                  {cloak && (
-                    <div className="setting-row">
-                      <select
-                        className="frost-select"
-                        value={cloakValue}
-                        onChange={(e) => setCloakValue(e.target.value)}
-                      >
-                        <option value="none">Disabled</option>
-                        <option value="google">Google Search</option>
-                        <option value="drive">Google Drive</option>
-                        <option value="classroom">Google Classroom</option>
-                        <option value="canvas">Canvas LMS</option>
-                        <option value="gmail">Gmail</option>
-                      </select>
-                    </div>
-                  )}
-                  <div className="setting-row">
-                    <div className="setting-info">
-                      <div className="setting-name">Search Engine</div>
-                      <div className="setting-desc">Default for home search</div>
-                    </div>
-                    <select
-                      className="frost-select"
-                      value={engine}
-                      onChange={(e) => {
-                        setEngine(e.target.value);
-                        try {
-                          localStorage.setItem("frostos-engine", e.target.value);
-                        } catch {}
-                      }}
-                    >
-                      <option value="google">Google</option>
-                      <option value="bing">Bing</option>
-                      <option value="duckduckgo">DuckDuckGo</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Proxy */}
-                <div className="pixel-card settings-card">
-                  <div className="settings-card-title">
-                    <i className="fa-solid fa-network-wired"></i> Proxy
-                  </div>
-                  <div className="setting-row">
-                    <div className="setting-info">
-                      <div className="setting-name">Proxy Mode</div>
-                      <div className="setting-desc">Use default or bring your own</div>
-                    </div>
-                    <select
-                      className="frost-select"
-                      value={proxy}
-                      onChange={(e) => setProxy(e.target.value as "default" | "byop")}
-                    >
-                      <option value="default">CF Workers</option>
-                      <option value="byop">Custom (BYOP)</option>
-                    </select>
-                  </div>
-                  {proxy === "byop" && (
-                    <div className="setting-row">
-                      <input
-                        type="text"
-                        className="frost-input"
-                        placeholder="Enter custom proxy URL..."
-                        value={byop}
-                        onChange={(e) => setByop(e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Account */}
-                <div className="pixel-card settings-card">
-                  <div className="settings-card-title">
-                    <i className="fa-solid fa-user"></i> Account
-                  </div>
-                  <div className="account-block">
-                    <div className="account-avatar">
-                      <PixelPenguin size={32} />
-                    </div>
-                    <div>
-                      <div className="account-name">Guest Penguin</div>
-                      <div className="account-sub">Not signed in</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notifications */}
-                <div className="pixel-card settings-card">
-                  <div className="settings-card-title">
-                    <i className="fa-solid fa-bell"></i> Notifications
-                  </div>
-                  <div className="setting-row">
-                    <div className="setting-info">
-                      <div className="setting-name">System Alerts</div>
-                      <div className="setting-desc">Show FrostOS updates</div>
-                    </div>
-                    <label className="toggle">
-                      <input
-                        type="checkbox"
-                        checked={notifSystem}
-                        onChange={(e) => setNotifSystem(e.target.checked)}
-                      />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
-                  <div className="setting-row">
-                    <div className="setting-info">
-                      <div className="setting-name">New Releases</div>
-                      <div className="setting-desc">Get notified of new content</div>
-                    </div>
-                    <label className="toggle">
-                      <input
-                        type="checkbox"
-                        checked={notifReleases}
-                        onChange={(e) => setNotifReleases(e.target.checked)}
-                      />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </main>
+              <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+            </div>
+          </div>
         </div>
-      </div>
-    </>
-  );
-}
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

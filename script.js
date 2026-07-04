@@ -1,5 +1,42 @@
 /* ── FrostOS script.js ───────────────────────────────────── */
 
+/* ── Ultraviolet service worker registration ─────────────── */
+const proxyStatusSub = document.getElementById('proxy-status-sub');
+function setProxyStatus(txt) { if (proxyStatusSub) proxyStatusSub.textContent = txt; }
+
+async function registerUV() {
+  if (!('serviceWorker' in navigator)) {
+    setProxyStatus('SW unsupported');
+    return;
+  }
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    setProxyStatus('HTTPS required');
+    console.warn('[FrostOS] Ultraviolet needs HTTPS (or localhost) — service worker will not register.');
+    return;
+  }
+  try {
+    await navigator.serviceWorker.register('/sw.js', { scope: '/service/' });
+    await navigator.serviceWorker.ready;
+    setProxyStatus('Connected');
+  } catch (err) {
+    console.error('[FrostOS] SW register failed:', err);
+    setProxyStatus('Offline');
+  }
+}
+registerUV();
+
+/* Build a proxied URL for an absolute http(s) target. */
+function proxify(rawUrl) {
+  try {
+    // eslint-disable-next-line no-undef
+    if (typeof __uv$config === 'undefined') return rawUrl;
+    // eslint-disable-next-line no-undef
+    return __uv$config.prefix + __uv$config.encodeUrl(rawUrl);
+  } catch (e) {
+    return rawUrl;
+  }
+}
+
 /* ── Boot sequence ─────────────────────────────────────────── */
 const bootScreen = document.getElementById('boot-screen');
 const bootBar    = document.getElementById('boot-bar');
@@ -10,6 +47,7 @@ const bootMessages = [
   'Loading FrostOS...',
   'Preparing Glacier Systems...',
   'Connecting to Arctic Network...',
+  'Warming Ultraviolet proxy...',
   'Calibrating Aurora Display...',
 ];
 let msgIdx = 0;
@@ -63,38 +101,26 @@ function showPage(id) {
   if (page) page.classList.add('active');
   if (btn)  btn.classList.add('active');
 
-  // ✨ ADDED CODE: If the user navigates to the movies page, load the movie player proxy!
-  if (id === 'movies') {
-    loadMoviePlayer();
-  }
+  if (id === 'movies') loadMoviePlayer();
 }
 
-// Sidebar nav
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => showPage(btn.dataset.page));
 });
-
-// Home quick-link pills
 document.querySelectorAll('.pill[data-page]').forEach(pill => {
   pill.addEventListener('click', () => showPage(pill.dataset.page));
 });
 
-// ✨ ADDED CODE: Define the Movie Player loader right below navigation logic
+/* ── Movies (proxied through UV) ──────────────────────────── */
 function loadMoviePlayer() {
-  const PROXY_URL = "https://workers.dev"; // 👈 Put your real CF Worker URL here
-  const TARGET_SITE = "https://toustream.xyz";
-  
+  const TARGET_SITE = localStorage.getItem('frostos-movie-src') || 'https://toustream.xyz';
   const moviesPlaceholder = document.getElementById('movies-placeholder');
   const moviesIframe = document.getElementById('movies-iframe');
-  
-  if (moviesIframe && moviesPlaceholder) {
-    moviesPlaceholder.classList.add('hidden');
-    moviesIframe.classList.remove('hidden');
-    
-    // Only load it if it's currently blank to prevent resetting their stream if they click back/forth
-    if (moviesIframe.src === 'about:blank' || moviesIframe.src === '') {
-      moviesIframe.src = PROXY_URL + encodeURIComponent(TARGET_SITE);
-    }
+  if (!moviesIframe || !moviesPlaceholder) return;
+  moviesPlaceholder.classList.add('hidden');
+  moviesIframe.classList.remove('hidden');
+  if (moviesIframe.src === 'about:blank' || moviesIframe.src === '') {
+    moviesIframe.src = proxify(TARGET_SITE);
   }
 }
 
@@ -102,19 +128,21 @@ function loadMoviePlayer() {
 const homeInput  = document.getElementById('home-search-input');
 const homeSearchBtn = document.getElementById('home-search-btn');
 
-function doHomeSearch() {
-  const q = homeInput.value.trim();
-  if (!q) return;
+function searchEngineUrl(q) {
   const engine = localStorage.getItem('frostos-engine') || 'google';
   const engines = {
     google:    'https://www.google.com/search?q=',
     bing:      'https://www.bing.com/search?q=',
     duckduckgo:'https://duckduckgo.com/?q=',
   };
-  const url = engines[engine] + encodeURIComponent(q);
-  // Navigate in browser tab
+  return engines[engine] + encodeURIComponent(q);
+}
+
+function doHomeSearch() {
+  const q = homeInput.value.trim();
+  if (!q) return;
   showPage('browser');
-  loadBrowserUrl(url);
+  loadBrowserUrl(searchEngineUrl(q));
 }
 homeSearchBtn.addEventListener('click', doHomeSearch);
 homeInput.addEventListener('keydown', e => { if (e.key === 'Enter') doHomeSearch(); });
@@ -131,19 +159,14 @@ const reloadBtn     = document.getElementById('reload-btn');
 function loadBrowserUrl(rawUrl) {
   let url = rawUrl.trim();
   if (!url) return;
-  if (!/^https?:\/\//i.test(url) && !url.startsWith('about:')) {
-    const engine = localStorage.getItem('frostos-engine') || 'google';
-    const engines = {
-      google:    'https://www.google.com/search?q=',
-      bing:      'https://www.bing.com/search?q=',
-      duckduckgo:'https://duckduckgo.com/?q=',
-    };
-    url = engines[engine] + encodeURIComponent(url);
+  if (!/^https?:\/\//i.test(url)) {
+    // treat as search query
+    url = searchEngineUrl(url);
   }
   browserAddr.value = url;
-  browserIframe.src = url;
   browserPH.classList.add('hidden');
   browserIframe.classList.remove('hidden');
+  browserIframe.src = proxify(url);
 }
 
 goBtn.addEventListener('click', () => loadBrowserUrl(browserAddr.value));
@@ -170,7 +193,6 @@ function addTab() {
 function setActiveTab(tab) {
   tabStrip.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
   tab.classList.add('active');
-  // reset viewport
   browserIframe.src = 'about:blank';
   browserIframe.classList.add('hidden');
   browserPH.classList.remove('hidden');
@@ -238,9 +260,30 @@ engineSelect.addEventListener('change', () => {
 const savedEngine = localStorage.getItem('frostos-engine');
 if (savedEngine) engineSelect.value = savedEngine;
 
-// Proxy / BYOP
+// Proxy / Bare server (BYOB)
 const proxySelect = document.getElementById('proxy-select');
 const byopRow     = document.getElementById('byop-row');
+const byopInput   = document.getElementById('byop-input');
+
+const savedBare = localStorage.getItem('frostos-bare');
+if (savedBare) {
+  proxySelect.value = 'byop';
+  byopRow.classList.remove('hidden');
+  byopInput.value = savedBare;
+}
+
 proxySelect.addEventListener('change', () => {
-  byopRow.classList.toggle('hidden', proxySelect.value !== 'byop');
+  const isByop = proxySelect.value === 'byop';
+  byopRow.classList.toggle('hidden', !isByop);
+  if (!isByop) {
+    localStorage.removeItem('frostos-bare');
+    setProxyStatus('Reload to apply');
+  }
+});
+byopInput.addEventListener('change', () => {
+  const v = byopInput.value.trim();
+  if (v) {
+    localStorage.setItem('frostos-bare', v);
+    setProxyStatus('Reload to apply');
+  }
 });
