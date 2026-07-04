@@ -1,18 +1,13 @@
 /* ── FrostOS script.js ───────────────────────────────────── */
 
-/* ── Ultraviolet service worker registration ─────────────── */
+/* ── Ultraviolet service worker ──────────────────────────── */
 const proxyStatusSub = document.getElementById('proxy-status-sub');
 function setProxyStatus(txt) { if (proxyStatusSub) proxyStatusSub.textContent = txt; }
 
 async function registerUV() {
-  if (!('serviceWorker' in navigator)) {
-    setProxyStatus('SW unsupported');
-    return;
-  }
+  if (!('serviceWorker' in navigator)) { setProxyStatus('SW unsupported'); return; }
   if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    setProxyStatus('HTTPS required');
-    console.warn('[FrostOS] Ultraviolet needs HTTPS (or localhost) — service worker will not register.');
-    return;
+    setProxyStatus('HTTPS required'); return;
   }
   try {
     await navigator.serviceWorker.register('/sw.js', { scope: '/service/' });
@@ -25,19 +20,14 @@ async function registerUV() {
 }
 registerUV();
 
-/* Build a proxied URL for an absolute http(s) target. */
 function proxify(rawUrl) {
   try {
-    // eslint-disable-next-line no-undef
     if (typeof __uv$config === 'undefined') return rawUrl;
-    // eslint-disable-next-line no-undef
     return __uv$config.prefix + __uv$config.encodeUrl(rawUrl);
-  } catch (e) {
-    return rawUrl;
-  }
+  } catch (e) { return rawUrl; }
 }
 
-/* ── Boot sequence ─────────────────────────────────────────── */
+/* ── Boot ────────────────────────────────────────────────── */
 const bootScreen = document.getElementById('boot-screen');
 const bootBar    = document.getElementById('boot-bar');
 const bootMsg    = document.getElementById('boot-msg');
@@ -69,30 +59,25 @@ const barInterval = setInterval(() => {
         bootScreen.classList.add('hidden');
         app.classList.remove('hidden');
         spawnSnow();
+        restoreSettings();
       }, 500);
     }, 300);
   }
 }, 210);
 
-/* ── Snow ─────────────────────────────────────────────────── */
+/* ── Snow ────────────────────────────────────────────────── */
 function spawnSnow() {
   const container = document.getElementById('snow-container');
   for (let i = 0; i < 14; i++) {
     const el = document.createElement('div');
     el.className = 'snowflake';
     el.innerHTML = '❄';
-    const size = 8 + (i % 3) * 4;
-    el.style.cssText = `
-      left: ${(i * 7.3) % 100}%;
-      font-size: ${size}px;
-      animation-duration: ${14 + (i % 5) * 3}s;
-      animation-delay: ${i * 1.3}s;
-    `;
+    el.style.cssText = `left:${(i * 7.3) % 100}%;font-size:${8 + (i % 3) * 4}px;animation-duration:${14 + (i % 5) * 3}s;animation-delay:${i * 1.3}s;`;
     container.appendChild(el);
   }
 }
 
-/* ── Page navigation ──────────────────────────────────────── */
+/* ── Nav ─────────────────────────────────────────────────── */
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -100,42 +85,33 @@ function showPage(id) {
   const btn  = document.querySelector(`.nav-btn[data-page="${id}"]`);
   if (page) page.classList.add('active');
   if (btn)  btn.classList.add('active');
-
   if (id === 'movies') loadMoviePlayer();
 }
 
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => showPage(btn.dataset.page));
-});
-document.querySelectorAll('.pill[data-page]').forEach(pill => {
-  pill.addEventListener('click', () => showPage(pill.dataset.page));
-});
+document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+document.querySelectorAll('.pill[data-page]').forEach(pill => pill.addEventListener('click', () => showPage(pill.dataset.page)));
 
-/* ── Movies (proxied through UV) ──────────────────────────── */
+/* ── Movies ──────────────────────────────────────────────── */
 function loadMoviePlayer() {
-  const TARGET_SITE = localStorage.getItem('frostos-movie-src') || 'https://toustream.xyz';
-  const moviesPlaceholder = document.getElementById('movies-placeholder');
-  const moviesIframe = document.getElementById('movies-iframe');
-  if (!moviesIframe || !moviesPlaceholder) return;
-  moviesPlaceholder.classList.add('hidden');
-  moviesIframe.classList.remove('hidden');
-  if (moviesIframe.src === 'about:blank' || moviesIframe.src === '') {
-    moviesIframe.src = proxify(TARGET_SITE);
+  const src = localStorage.getItem('frostos-movie-src') || 'https://toustream.xyz';
+  const ph  = document.getElementById('movies-placeholder');
+  const ifr = document.getElementById('movies-iframe');
+  if (!ifr || !ph) return;
+  ph.classList.add('hidden');
+  ifr.classList.remove('hidden');
+  if (!ifr.dataset.loaded) {
+    ifr.src = proxify(src);
+    ifr.dataset.loaded = '1';
   }
 }
 
-/* ── Home search ──────────────────────────────────────────── */
-const homeInput  = document.getElementById('home-search-input');
+/* ── Home search ─────────────────────────────────────────── */
+const homeInput     = document.getElementById('home-search-input');
 const homeSearchBtn = document.getElementById('home-search-btn');
 
 function searchEngineUrl(q) {
   const engine = localStorage.getItem('frostos-engine') || 'google';
-  const engines = {
-    google:    'https://www.google.com/search?q=',
-    bing:      'https://www.bing.com/search?q=',
-    duckduckgo:'https://duckduckgo.com/?q=',
-  };
-  return engines[engine] + encodeURIComponent(q);
+  return { google:'https://www.google.com/search?q=', bing:'https://www.bing.com/search?q=', duckduckgo:'https://duckduckgo.com/?q=' }[engine] + encodeURIComponent(q);
 }
 
 function doHomeSearch() {
@@ -147,37 +123,30 @@ function doHomeSearch() {
 homeSearchBtn.addEventListener('click', doHomeSearch);
 homeInput.addEventListener('keydown', e => { if (e.key === 'Enter') doHomeSearch(); });
 
-/* ── Browser ──────────────────────────────────────────────── */
+/* ── Browser ─────────────────────────────────────────────── */
 const browserAddr   = document.getElementById('browser-addr');
 const browserIframe = document.getElementById('browser-iframe');
 const browserPH     = document.getElementById('browser-placeholder');
-const goBtn         = document.getElementById('go-btn');
-const backBtn       = document.getElementById('back-btn');
-const fwdBtn        = document.getElementById('fwd-btn');
-const reloadBtn     = document.getElementById('reload-btn');
 
 function loadBrowserUrl(rawUrl) {
   let url = rawUrl.trim();
   if (!url) return;
-  if (!/^https?:\/\//i.test(url)) {
-    // treat as search query
-    url = searchEngineUrl(url);
-  }
+  if (!/^https?:\/\//i.test(url)) url = searchEngineUrl(url);
   browserAddr.value = url;
   browserPH.classList.add('hidden');
   browserIframe.classList.remove('hidden');
   browserIframe.src = proxify(url);
 }
 
-goBtn.addEventListener('click', () => loadBrowserUrl(browserAddr.value));
+document.getElementById('go-btn').addEventListener('click', () => loadBrowserUrl(browserAddr.value));
 browserAddr.addEventListener('keydown', e => { if (e.key === 'Enter') loadBrowserUrl(browserAddr.value); });
-backBtn.addEventListener('click',   () => { try { browserIframe.contentWindow.history.back();    } catch(e){} });
-fwdBtn.addEventListener('click',    () => { try { browserIframe.contentWindow.history.forward(); } catch(e){} });
-reloadBtn.addEventListener('click', () => { browserIframe.src = browserIframe.src; });
+document.getElementById('back-btn').addEventListener('click', () => { try { browserIframe.contentWindow.history.back(); } catch(e){} });
+document.getElementById('fwd-btn').addEventListener('click', () => { try { browserIframe.contentWindow.history.forward(); } catch(e){} });
+document.getElementById('reload-btn').addEventListener('click', () => { browserIframe.src = browserIframe.src; });
 
-// Browser tabs (basic)
+/* Browser tabs */
 let tabCount = 1;
-const tabStrip = document.getElementById('browser-tabs');
+const tabStrip  = document.getElementById('browser-tabs');
 const addTabBtn = document.getElementById('add-tab-btn');
 
 function addTab() {
@@ -203,34 +172,31 @@ tabStrip.addEventListener('click', e => {
   const tab   = e.target.closest('.b-tab');
   const close = e.target.closest('.tab-close');
   if (close && tab) {
-    const tabs = tabStrip.querySelectorAll('.b-tab');
-    if (tabs.length <= 1) return;
+    if (tabStrip.querySelectorAll('.b-tab').length <= 1) return;
+    const wasActive = tab.classList.contains('active');
     tab.remove();
     const remaining = tabStrip.querySelectorAll('.b-tab');
-    if (!tabStrip.querySelector('.b-tab.active') && remaining.length) {
-      setActiveTab(remaining[remaining.length - 1]);
-    }
+    if (wasActive && remaining.length) setActiveTab(remaining[remaining.length - 1]);
   } else if (tab) {
     setActiveTab(tab);
   }
 });
-
 addTabBtn.addEventListener('click', addTab);
 
-/* ── Settings ─────────────────────────────────────────────── */
+/* ── Settings ────────────────────────────────────────────── */
 
-// Tab cloaking
+/* Tab cloaking */
 const cloakToggle  = document.getElementById('tab-cloak-toggle');
 const cloakOptions = document.getElementById('cloak-options');
 const cloakSelect  = document.getElementById('cloak-select');
 
 const cloakData = {
-  none:      { title: 'FrostOS',          icon: 'penguin.svg' },
-  google:    { title: 'Google',           icon: 'https://www.google.com/favicon.ico' },
-  drive:     { title: 'Google Drive',     icon: 'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png' },
-  classroom: { title: 'Google Classroom', icon: 'https://ssl.gstatic.com/classroom/favicon.png' },
-  canvas:    { title: 'Canvas',           icon: 'https://du11hjcvx0ubn.cloudfront.net/dist/images/favicon-e10d657a73.ico' },
-  gmail:     { title: 'Gmail',            icon: 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico' },
+  none:      { title:'FrostOS',           icon:'penguin.svg' },
+  google:    { title:'Google',            icon:'https://www.google.com/favicon.ico' },
+  drive:     { title:'Google Drive',      icon:'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png' },
+  classroom: { title:'Google Classroom',  icon:'https://ssl.gstatic.com/classroom/favicon.png' },
+  canvas:    { title:'Canvas',            icon:'https://du11hjcvx0ubn.cloudfront.net/dist/images/favicon-e10d657a73.ico' },
+  gmail:     { title:'Gmail',             icon:'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico' },
 };
 
 function applyCloak(value) {
@@ -242,48 +208,56 @@ function applyCloak(value) {
 }
 
 cloakToggle.addEventListener('change', () => {
-  if (cloakToggle.checked) {
-    cloakOptions.classList.remove('hidden');
-    applyCloak(cloakSelect.value);
-  } else {
-    cloakOptions.classList.add('hidden');
-    applyCloak('none');
-  }
+  const on = cloakToggle.checked;
+  cloakOptions.classList.toggle('hidden', !on);
+  localStorage.setItem('frostos-cloak-on', on ? '1' : '');
+  applyCloak(on ? cloakSelect.value : 'none');
 });
-cloakSelect.addEventListener('change', () => applyCloak(cloakSelect.value));
+cloakSelect.addEventListener('change', () => {
+  localStorage.setItem('frostos-cloak', cloakSelect.value);
+  applyCloak(cloakSelect.value);
+});
 
-// Search engine
+/* Search engine */
 const engineSelect = document.getElementById('engine-select');
-engineSelect.addEventListener('change', () => {
-  localStorage.setItem('frostos-engine', engineSelect.value);
-});
-const savedEngine = localStorage.getItem('frostos-engine');
-if (savedEngine) engineSelect.value = savedEngine;
+engineSelect.addEventListener('change', () => localStorage.setItem('frostos-engine', engineSelect.value));
 
-// Proxy / Bare server (BYOB)
+/* Proxy / BYOB */
 const proxySelect = document.getElementById('proxy-select');
 const byopRow     = document.getElementById('byop-row');
 const byopInput   = document.getElementById('byop-input');
 
-const savedBare = localStorage.getItem('frostos-bare');
-if (savedBare) {
-  proxySelect.value = 'byop';
-  byopRow.classList.remove('hidden');
-  byopInput.value = savedBare;
-}
-
 proxySelect.addEventListener('change', () => {
   const isByop = proxySelect.value === 'byop';
   byopRow.classList.toggle('hidden', !isByop);
-  if (!isByop) {
-    localStorage.removeItem('frostos-bare');
-    setProxyStatus('Reload to apply');
-  }
+  if (!isByop) { localStorage.removeItem('frostos-bare'); setProxyStatus('Reload to apply'); }
 });
 byopInput.addEventListener('change', () => {
   const v = byopInput.value.trim();
-  if (v) {
-    localStorage.setItem('frostos-bare', v);
-    setProxyStatus('Reload to apply');
-  }
+  if (v) { localStorage.setItem('frostos-bare', v); setProxyStatus('Reload to apply'); }
 });
+
+/* ── Restore all settings on load ────────────────────────── */
+function restoreSettings() {
+  /* engine */
+  const savedEngine = localStorage.getItem('frostos-engine');
+  if (savedEngine && engineSelect) engineSelect.value = savedEngine;
+
+  /* cloak */
+  const savedCloakOn  = localStorage.getItem('frostos-cloak-on');
+  const savedCloakVal = localStorage.getItem('frostos-cloak') || 'none';
+  if (savedCloakOn && cloakToggle) {
+    cloakToggle.checked = true;
+    cloakSelect.value   = savedCloakVal;
+    cloakOptions.classList.remove('hidden');
+    applyCloak(savedCloakVal);
+  }
+
+  /* proxy */
+  const savedBare = localStorage.getItem('frostos-bare');
+  if (savedBare && proxySelect) {
+    proxySelect.value = 'byop';
+    byopRow.classList.remove('hidden');
+    byopInput.value = savedBare;
+  }
+}
