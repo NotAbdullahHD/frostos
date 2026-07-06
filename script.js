@@ -1,410 +1,331 @@
-/* ── FrostOS script.js ───────────────────────────────────── */
+/* ── FrostOS ───────────────────────────────────────────────── */
 
-/* ── Bare server registry ────────────────────────────────── */
-/* Public Ultraviolet Bare servers. These come and go — the health check
-   in Settings → Proxy will show which ones are live right now.
-   Add your own via "Custom (BYOB)" or by hosting your own (see README). */
-const BARE_SERVERS = [
-  { id: 'tomp',      name: 'TOMP.io',        url: 'https://tomp.io/bare-server/' },
-  { id: 'holyub',    name: 'HolyUnblocker',  url: 'https://uv.holyubofficial.net/' },
-  { id: 'nebula',    name: 'Nebula',         url: 'https://nebulaproxy.io/bare/' },
-  { id: 'incog',     name: 'Incognito',      url: 'https://incog.works/bare/' },
-  { id: 'arc',       name: 'Arc',            url: 'https://arc.gointerstellar.app/bare/' },
+/* Proxy registry — URL-prefix templates. Iframe src = prefix + encodeURIComponent(target).
+   "direct" means load the target URL as-is (works for movie/game embed hosts). */
+const PROXIES = [
+  { id: "direct",   name: "Direct (no proxy)",  prefix: "",                                           ping: "https://www.google.com/generate_204" },
+  { id: "duckduck", name: "DuckDuckGo Lite",    prefix: "https://duckduckgo.com/?q=!+",               ping: "https://duckduckgo.com/favicon.ico" },
+  { id: "wayback",  name: "Wayback Machine",    prefix: "https://web.archive.org/web/2*/",            ping: "https://web.archive.org/favicon.ico" },
+  { id: "googletr", name: "Google Translate",   prefix: "https://translate.google.com/translate?sl=auto&tl=en&u=", ping: "https://translate.google.com/favicon.ico" },
+  { id: "12ft",     name: "12ft Reader",        prefix: "https://12ft.io/",                           ping: "https://12ft.io/favicon.ico" },
+  { id: "croxy",    name: "CroxyProxy",         prefix: "https://www.croxyproxy.com/_public/servlet/direct?url=", ping: "https://www.croxyproxy.com/favicon.ico" },
 ];
-const DEFAULT_BARE = BARE_SERVERS[0].url;
 
-/* ── Ultraviolet service worker registration ─────────────── */
-const proxyStatusSub = document.getElementById('proxy-status-sub');
-function setProxyStatus(txt) { if (proxyStatusSub) proxyStatusSub.textContent = txt; }
+let currentProxyId = localStorage.getItem("frostos-proxy") || "direct";
+let byopPrefix     = localStorage.getItem("frostos-byop") || "";
 
-function getActiveBare() {
-  return localStorage.getItem('frostos-bare') || DEFAULT_BARE;
+function currentPrefix() {
+  if (currentProxyId === "byop") return byopPrefix;
+  const p = PROXIES.find(p => p.id === currentProxyId);
+  return p ? p.prefix : "";
 }
-
-let swRegistration = null;
-async function registerUV() {
-  if (!('serviceWorker' in navigator)) { setProxyStatus('SW unsupported'); return; }
-  if (location.protocol !== 'https:' &&
-      location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    setProxyStatus('HTTPS required');
-    console.warn('[FrostOS] Ultraviolet requires HTTPS (or localhost).');
-    return;
-  }
-  const bare = getActiveBare();
-  const swUrl = '/sw.js?bare=' + encodeURIComponent(bare);
-  try {
-    // Unregister anything old so the new ?bare= takes effect
-    const existing = await navigator.serviceWorker.getRegistrations();
-    for (const r of existing) {
-      if (r.active && r.active.scriptURL.indexOf('/sw.js') !== -1 &&
-          r.active.scriptURL.indexOf('bare=' + encodeURIComponent(bare)) === -1) {
-        await r.unregister();
-      }
-    }
-    swRegistration = await navigator.serviceWorker.register(swUrl, { scope: '/service/' });
-    await navigator.serviceWorker.ready;
-    setProxyStatus('Connected · ' + hostOf(bare));
-  } catch (err) {
-    console.error('[FrostOS] SW register failed:', err);
-    setProxyStatus('Offline');
-  }
+function proxify(target) {
+  const pfx = currentPrefix();
+  if (!pfx) return target;
+  return pfx + encodeURIComponent(target);
 }
-function hostOf(u) { try { return new URL(u).host; } catch { return u; } }
-
-/* Build a proxied URL for an absolute http(s) target. */
-function proxify(rawUrl) {
-  try {
-    if (typeof __uv$config === 'undefined') return rawUrl;
-    return __uv$config.prefix + __uv$config.encodeUrl(rawUrl);
-  } catch { return rawUrl; }
-}
-
-/* ── Bare server health check ────────────────────────────── */
-/* A live Bare server returns JSON at its root with a "versions" array. */
-async function pingBare(url, timeoutMs = 4000) {
-  const started = performance.now();
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { method: 'GET', signal: ctrl.signal, cache: 'no-store' });
-    clearTimeout(t);
-    if (!res.ok) return { ok: false, ms: null, reason: 'HTTP ' + res.status };
-    const body = await res.json().catch(() => null);
-    const looksBare = body && (Array.isArray(body.versions) || body.language === 'NodeJS' || body.project);
-    return { ok: !!looksBare, ms: Math.round(performance.now() - started),
-             reason: looksBare ? 'OK' : 'not a Bare server' };
-  } catch (e) {
-    clearTimeout(t);
-    return { ok: false, ms: null, reason: e.name === 'AbortError' ? 'timeout' : 'unreachable' };
+function updateProxyStatus() {
+  const label = document.getElementById("proxy-status-label");
+  const sub   = document.getElementById("proxy-status-sub");
+  if (currentProxyId === "byop") {
+    label.textContent = "Proxy: Custom";
+    sub.textContent = byopPrefix ? "Configured" : "Set URL below";
+  } else {
+    const p = PROXIES.find(p => p.id === currentProxyId);
+    label.textContent = "Proxy: " + (p ? p.name : "Direct");
+    sub.textContent = p && p.prefix ? "Active" : "Direct";
   }
 }
 
-async function healthCheckAll(onResult) {
-  const results = [];
-  await Promise.all(BARE_SERVERS.map(async (s) => {
-    const r = await pingBare(s.url);
-    const row = { ...s, ...r };
-    results.push(row);
-    if (onResult) onResult(row);
-  }));
-  return results;
-}
-
-async function pickBestBare() {
-  const results = await healthCheckAll();
-  const ok = results.filter(r => r.ok).sort((a, b) => a.ms - b.ms);
-  return ok[0] || null;
-}
-
-/* ── Boot sequence ─────────────────────────────────────────── */
-const bootScreen = document.getElementById('boot-screen');
-const bootBar    = document.getElementById('boot-bar');
-const bootMsg    = document.getElementById('boot-msg');
-const app        = document.getElementById('app');
+/* ── Boot ─────────────────────────────────────────────────── */
+const bootScreen = document.getElementById("boot-screen");
+const bootBar    = document.getElementById("boot-bar");
+const bootMsg    = document.getElementById("boot-msg");
+const app        = document.getElementById("app");
 
 const bootMessages = [
-  'Loading FrostOS...',
-  'Preparing Glacier Systems...',
-  'Connecting to Arctic Network...',
-  'Warming Ultraviolet proxy...',
-  'Calibrating Aurora Display...',
+  "Loading FrostOS...",
+  "Preparing Glacier Systems...",
+  "Connecting to Arctic Network...",
+  "Calibrating Aurora Display...",
 ];
 let msgIdx = 0;
-const msgInterval = setInterval(() => {
-  msgIdx = (msgIdx + 1) % bootMessages.length;
-  bootMsg.textContent = bootMessages[msgIdx];
-}, 900);
-
+const msgInt = setInterval(() => { msgIdx = (msgIdx+1)%bootMessages.length; bootMsg.textContent = bootMessages[msgIdx]; }, 900);
 let progress = 0;
-const barInterval = setInterval(() => {
-  progress = Math.min(progress + Math.random() * 15 + 6, 100);
-  bootBar.style.width = progress + '%';
+const barInt = setInterval(() => {
+  progress = Math.min(progress + Math.random()*15 + 6, 100);
+  bootBar.style.width = progress + "%";
   if (progress >= 100) {
-    clearInterval(barInterval);
-    clearInterval(msgInterval);
+    clearInterval(barInt); clearInterval(msgInt);
     setTimeout(() => {
-      bootScreen.classList.add('fade-out');
-      setTimeout(() => {
-        bootScreen.classList.add('hidden');
-        app.classList.remove('hidden');
-        spawnSnow();
-        // Register SW after boot so the initial network is quiet
-        registerUV();
-      }, 500);
+      bootScreen.classList.add("fade-out");
+      setTimeout(() => { bootScreen.classList.add("hidden"); app.classList.remove("hidden"); spawnSnow(); }, 500);
     }, 300);
   }
 }, 210);
 
-/* ── Snow ─────────────────────────────────────────────────── */
 function spawnSnow() {
-  const container = document.getElementById('snow-container');
-  for (let i = 0; i < 14; i++) {
-    const el = document.createElement('div');
-    el.className = 'snowflake';
-    el.innerHTML = '❄';
-    const size = 8 + (i % 3) * 4;
-    el.style.cssText = `
-      left: ${(i * 7.3) % 100}%;
-      font-size: ${size}px;
-      animation-duration: ${14 + (i % 5) * 3}s;
-      animation-delay: ${i * 1.3}s;
-    `;
-    container.appendChild(el);
+  const c = document.getElementById("snow-container");
+  for (let i=0;i<14;i++){
+    const el = document.createElement("div");
+    el.className = "snowflake"; el.textContent = "❄";
+    const size = 8 + (i%3)*4;
+    el.style.cssText = `left:${(i*7.3)%100}%;font-size:${size}px;animation-duration:${14+(i%5)*3}s;animation-delay:${i*1.3}s`;
+    c.appendChild(el);
   }
 }
 
-/* ── Page navigation ──────────────────────────────────────── */
+/* ── Pages ────────────────────────────────────────────────── */
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const page = document.getElementById('page-' + id);
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  const page = document.getElementById("page-"+id);
   const btn  = document.querySelector(`.nav-btn[data-page="${id}"]`);
-  if (page) page.classList.add('active');
-  if (btn)  btn.classList.add('active');
-  if (id === 'movies') loadMoviePlayer();
+  if (page) page.classList.add("active");
+  if (btn)  btn.classList.add("active");
+  if (id === "movies") loadMovies();
+  if (id === "games")  ensureGames();
 }
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => showPage(btn.dataset.page));
-});
-document.querySelectorAll('.pill[data-page]').forEach(pill => {
-  pill.addEventListener('click', () => showPage(pill.dataset.page));
-});
+document.querySelectorAll(".nav-btn").forEach(b => b.addEventListener("click", () => showPage(b.dataset.page)));
+document.querySelectorAll(".pixel-pill[data-page]").forEach(p => p.addEventListener("click", () => showPage(p.dataset.page)));
 
-/* ── Movies ──────────────────────────────────────────────── */
-function loadMoviePlayer() {
-  const TARGET_SITE = localStorage.getItem('frostos-movie-src') || 'https://toustream.xyz';
-  const moviesPlaceholder = document.getElementById('movies-placeholder');
-  const moviesIframe = document.getElementById('movies-iframe');
-  if (!moviesIframe || !moviesPlaceholder) return;
-  moviesPlaceholder.classList.add('hidden');
-  moviesIframe.classList.remove('hidden');
-  if (moviesIframe.src === 'about:blank' || moviesIframe.src === '') {
-    moviesIframe.src = proxify(TARGET_SITE);
+/* ── Movies ───────────────────────────────────────────────── */
+const MOVIES_TARGET = "https://toustream.xyz";
+function loadMovies() {
+  const f = document.getElementById("movies-iframe");
+  if (!f) return;
+  const desired = proxify(MOVIES_TARGET);
+  if (f.dataset.loadedFor !== desired) {
+    f.src = desired;
+    f.dataset.loadedFor = desired;
   }
 }
 
-/* ── Home search ─────────────────────────────────────────── */
-const homeInput  = document.getElementById('home-search-input');
-const homeSearchBtn = document.getElementById('home-search-btn');
-function searchEngineUrl(q) {
-  const engine = localStorage.getItem('frostos-engine') || 'google';
-  const engines = {
-    google:    'https://www.google.com/search?q=',
-    bing:      'https://www.bing.com/search?q=',
-    duckduckgo:'https://duckduckgo.com/?q=',
-  };
-  return engines[engine] + encodeURIComponent(q);
-}
+/* ── Home search ──────────────────────────────────────────── */
+const ENGINES = {
+  google:     "https://www.google.com/search?q=",
+  bing:       "https://www.bing.com/search?q=",
+  duckduckgo: "https://duckduckgo.com/?q=",
+};
+function getEngine() { return ENGINES[localStorage.getItem("frostos-engine") || "google"] || ENGINES.google; }
 function doHomeSearch() {
-  const q = homeInput.value.trim();
+  const q = document.getElementById("home-search-input").value.trim();
   if (!q) return;
-  showPage('browser');
-  loadBrowserUrl(searchEngineUrl(q));
+  showPage("browser");
+  loadBrowserUrl(getEngine() + encodeURIComponent(q));
 }
-homeSearchBtn.addEventListener('click', doHomeSearch);
-homeInput.addEventListener('keydown', e => { if (e.key === 'Enter') doHomeSearch(); });
+document.getElementById("home-search-btn").addEventListener("click", doHomeSearch);
+document.getElementById("home-search-input").addEventListener("keydown", e => { if (e.key === "Enter") doHomeSearch(); });
 
-/* ── Browser ─────────────────────────────────────────────── */
-const browserAddr   = document.getElementById('browser-addr');
-const browserIframe = document.getElementById('browser-iframe');
-const browserPH     = document.getElementById('browser-placeholder');
-const goBtn         = document.getElementById('go-btn');
-const backBtn       = document.getElementById('back-btn');
-const fwdBtn        = document.getElementById('fwd-btn');
-const reloadBtn     = document.getElementById('reload-btn');
+/* ── Browser ──────────────────────────────────────────────── */
+const browserAddr   = document.getElementById("browser-addr");
+const browserIframe = document.getElementById("browser-iframe");
+const browserPH     = document.getElementById("browser-placeholder");
 
-async function ensureSWReady() {
-  if (!('serviceWorker' in navigator)) return false;
-  if (!swRegistration) await registerUV();
-  try { await navigator.serviceWorker.ready; return true; } catch { return false; }
-}
-
-async function loadBrowserUrl(rawUrl) {
-  let url = rawUrl.trim();
+function loadBrowserUrl(raw) {
+  let url = raw.trim();
   if (!url) return;
-  if (!/^https?:\/\//i.test(url)) url = searchEngineUrl(url);
-  browserAddr.value = url;
-  browserPH.classList.add('hidden');
-  browserIframe.classList.remove('hidden');
-  const ready = await ensureSWReady();
-  if (!ready) {
-    browserPH.classList.remove('hidden');
-    browserIframe.classList.add('hidden');
-    setProxyStatus('SW not ready — see Settings → Proxy');
-    return;
+  if (!/^https?:\/\//i.test(url) && !url.startsWith("about:")) {
+    url = getEngine() + encodeURIComponent(url);
   }
+  browserAddr.value = url;
   browserIframe.src = proxify(url);
+  browserPH.classList.add("hidden");
+  browserIframe.classList.remove("hidden");
 }
+document.getElementById("go-btn").addEventListener("click", () => loadBrowserUrl(browserAddr.value));
+browserAddr.addEventListener("keydown", e => { if (e.key === "Enter") loadBrowserUrl(browserAddr.value); });
+document.getElementById("back-btn").addEventListener("click",   () => { try { browserIframe.contentWindow.history.back(); } catch{} });
+document.getElementById("fwd-btn").addEventListener("click",    () => { try { browserIframe.contentWindow.history.forward(); } catch{} });
+document.getElementById("reload-btn").addEventListener("click", () => { browserIframe.src = browserIframe.src; });
 
-goBtn.addEventListener('click', () => loadBrowserUrl(browserAddr.value));
-browserAddr.addEventListener('keydown', e => { if (e.key === 'Enter') loadBrowserUrl(browserAddr.value); });
-backBtn.addEventListener('click',   () => { try { browserIframe.contentWindow.history.back();    } catch(e){} });
-fwdBtn.addEventListener('click',    () => { try { browserIframe.contentWindow.history.forward(); } catch(e){} });
-reloadBtn.addEventListener('click', () => { browserIframe.src = browserIframe.src; });
-
-// Browser tabs (basic)
+// Tabs (visual only — one shared iframe)
 let tabCount = 1;
-const tabStrip = document.getElementById('browser-tabs');
-const addTabBtn = document.getElementById('add-tab-btn');
+const tabStrip  = document.getElementById("browser-tabs");
+const addTabBtn = document.getElementById("add-tab-btn");
 function addTab() {
   tabCount++;
-  const tab = document.createElement('div');
-  tab.className = 'b-tab';
-  tab.dataset.id = tabCount;
+  const tab = document.createElement("div");
+  tab.className = "b-tab"; tab.dataset.id = tabCount;
   tab.innerHTML = `<i class="fa-solid fa-snowflake"></i><span>New Tab</span><i class="fa-solid fa-xmark tab-close"></i>`;
   tabStrip.insertBefore(tab, addTabBtn);
   setActiveTab(tab);
 }
 function setActiveTab(tab) {
-  tabStrip.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
-  tab.classList.add('active');
-  browserIframe.src = 'about:blank';
-  browserIframe.classList.add('hidden');
-  browserPH.classList.remove('hidden');
-  browserAddr.value = 'https://';
+  tabStrip.querySelectorAll(".b-tab").forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  browserIframe.src = "about:blank";
+  browserIframe.classList.add("hidden");
+  browserPH.classList.remove("hidden");
+  browserAddr.value = "https://";
 }
-tabStrip.addEventListener('click', e => {
-  const tab   = e.target.closest('.b-tab');
-  const close = e.target.closest('.tab-close');
+tabStrip.addEventListener("click", e => {
+  const tab = e.target.closest(".b-tab");
+  const close = e.target.closest(".tab-close");
   if (close && tab) {
-    const tabs = tabStrip.querySelectorAll('.b-tab');
+    const tabs = tabStrip.querySelectorAll(".b-tab");
     if (tabs.length <= 1) return;
+    const wasActive = tab.classList.contains("active");
     tab.remove();
-    const remaining = tabStrip.querySelectorAll('.b-tab');
-    if (!tabStrip.querySelector('.b-tab.active') && remaining.length) {
-      setActiveTab(remaining[remaining.length - 1]);
+    if (wasActive) {
+      const remain = tabStrip.querySelectorAll(".b-tab");
+      if (remain.length) setActiveTab(remain[remain.length-1]);
     }
   } else if (tab) setActiveTab(tab);
 });
-addTabBtn.addEventListener('click', addTab);
+addTabBtn.addEventListener("click", addTab);
 
-/* ── Settings: cloak ─────────────────────────────────────── */
-const cloakToggle  = document.getElementById('tab-cloak-toggle');
-const cloakOptions = document.getElementById('cloak-options');
-const cloakSelect  = document.getElementById('cloak-select');
+/* ── Games ────────────────────────────────────────────────── */
+let GAMES = null;
+async function ensureGames() {
+  if (GAMES) return;
+  try {
+    const res = await fetch("games.json");
+    GAMES = await res.json();
+  } catch { GAMES = []; }
+  renderGames("");
+  document.getElementById("games-search").addEventListener("input", e => renderGames(e.target.value));
+}
+function renderGames(q) {
+  const grid = document.getElementById("games-grid");
+  grid.innerHTML = "";
+  const ql = q.trim().toLowerCase();
+  const list = ql
+    ? GAMES.filter(g => (g.title+" "+g.tags).toLowerCase().includes(ql))
+    : GAMES;
+  const frag = document.createDocumentFragment();
+  list.forEach(g => {
+    const c = document.createElement("div");
+    c.className = "game-card";
+    c.innerHTML = `<img loading="lazy" src="${g.image}" alt=""><div class="game-card-title">${escapeHtml(g.title)}</div>`;
+    c.addEventListener("click", () => openGame(g));
+    frag.appendChild(c);
+  });
+  grid.appendChild(frag);
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(244,250,252,0.35);font-family:'VT323',monospace;font-size:20px">No games match "${escapeHtml(q)}"</div>`;
+  }
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+const gameModal = document.getElementById("game-modal");
+const gameIframe = document.getElementById("game-iframe");
+const gameTitle  = document.getElementById("game-modal-title");
+function openGame(g) {
+  gameTitle.textContent = g.title;
+  gameIframe.src = proxify(g.embed);
+  gameModal.classList.remove("hidden");
+}
+document.getElementById("game-modal-close").addEventListener("click", () => {
+  gameModal.classList.add("hidden");
+  gameIframe.src = "about:blank";
+});
+gameModal.addEventListener("click", e => {
+  if (e.target === gameModal) { gameModal.classList.add("hidden"); gameIframe.src = "about:blank"; }
+});
+
+/* ── Settings ─────────────────────────────────────────────── */
+// Cloak
+const cloakToggle = document.getElementById("tab-cloak-toggle");
+const cloakOpts   = document.getElementById("cloak-options");
+const cloakSelect = document.getElementById("cloak-select");
 const cloakData = {
-  none:      { title: 'FrostOS',          icon: 'penguin.svg' },
-  google:    { title: 'Google',           icon: 'https://www.google.com/favicon.ico' },
-  drive:     { title: 'Google Drive',     icon: 'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png' },
-  classroom: { title: 'Google Classroom', icon: 'https://ssl.gstatic.com/classroom/favicon.png' },
-  canvas:    { title: 'Canvas',           icon: 'https://du11hjcvx0ubn.cloudfront.net/dist/images/favicon-e10d657a73.ico' },
-  gmail:     { title: 'Gmail',            icon: 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico' },
+  none:      { title: "FrostOS",          icon: "penguin.svg" },
+  google:    { title: "Google",           icon: "https://www.google.com/favicon.ico" },
+  drive:     { title: "Google Drive",     icon: "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" },
+  classroom: { title: "Google Classroom", icon: "https://ssl.gstatic.com/classroom/favicon.png" },
+  canvas:    { title: "Canvas",           icon: "https://du11hjcvx0ubn.cloudfront.net/dist/images/favicon-e10d657a73.ico" },
+  gmail:     { title: "Gmail",            icon: "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" },
 };
-function applyCloak(value) {
-  const d = cloakData[value] || cloakData.none;
+function applyCloak(v){
+  const d = cloakData[v] || cloakData.none;
   document.title = d.title;
   let link = document.querySelector("link[rel='icon']");
-  if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+  if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
   link.href = d.icon;
 }
-cloakToggle.addEventListener('change', () => {
-  if (cloakToggle.checked) { cloakOptions.classList.remove('hidden'); applyCloak(cloakSelect.value); }
-  else { cloakOptions.classList.add('hidden'); applyCloak('none'); }
+cloakToggle.addEventListener("change", () => {
+  if (cloakToggle.checked) { cloakOpts.classList.remove("hidden"); applyCloak(cloakSelect.value); }
+  else { cloakOpts.classList.add("hidden"); applyCloak("none"); }
 });
-cloakSelect.addEventListener('change', () => applyCloak(cloakSelect.value));
+cloakSelect.addEventListener("change", () => applyCloak(cloakSelect.value));
 
-/* ── Settings: search engine ─────────────────────────────── */
-const engineSelect = document.getElementById('engine-select');
-engineSelect.addEventListener('change', () => {
-  localStorage.setItem('frostos-engine', engineSelect.value);
-});
-const savedEngine = localStorage.getItem('frostos-engine');
-if (savedEngine) engineSelect.value = savedEngine;
+// Engine
+const engineSelect = document.getElementById("engine-select");
+engineSelect.value = localStorage.getItem("frostos-engine") || "google";
+engineSelect.addEventListener("change", () => localStorage.setItem("frostos-engine", engineSelect.value));
 
-/* ── Settings: Proxy / Bare ──────────────────────────────── */
-const proxySelect  = document.getElementById('proxy-select');
-const byopRow      = document.getElementById('byop-row');
-const byopInput    = document.getElementById('byop-input');
-const bareStatusEl = document.getElementById('bare-status');
-const checkBtn     = document.getElementById('bare-check-btn');
-const bestBtn      = document.getElementById('bare-best-btn');
-const activeBareEl = document.getElementById('active-bare');
-
-/* Populate proxy dropdown from BARE_SERVERS */
-function initProxyDropdown() {
-  proxySelect.innerHTML = '';
-  BARE_SERVERS.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s.url; o.textContent = s.name + ' — ' + hostOf(s.url);
+// Proxy select
+const proxySelect = document.getElementById("proxy-select");
+const byopRow     = document.getElementById("byop-row");
+const byopInput   = document.getElementById("byop-input");
+function populateProxySelect() {
+  proxySelect.innerHTML = "";
+  PROXIES.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.id; o.textContent = p.name;
     proxySelect.appendChild(o);
   });
-  const byop = document.createElement('option');
-  byop.value = 'byop'; byop.textContent = 'Custom (BYOB)…';
-  proxySelect.appendChild(byop);
-
-  const saved = localStorage.getItem('frostos-bare');
-  if (saved && !BARE_SERVERS.some(s => s.url === saved)) {
-    proxySelect.value = 'byop';
-    byopRow.classList.remove('hidden');
-    byopInput.value = saved;
-  } else {
-    proxySelect.value = saved || DEFAULT_BARE;
-  }
-  updateActiveBare();
+  const custom = document.createElement("option");
+  custom.value = "byop"; custom.textContent = "Custom (BYOP)";
+  proxySelect.appendChild(custom);
+  proxySelect.value = currentProxyId;
+  byopRow.classList.toggle("hidden", currentProxyId !== "byop");
+  byopInput.value = byopPrefix;
 }
-function updateActiveBare() {
-  if (activeBareEl) activeBareEl.textContent = getActiveBare();
-}
+populateProxySelect();
+updateProxyStatus();
 
-async function setBare(url) {
-  localStorage.setItem('frostos-bare', url);
-  updateActiveBare();
-  setProxyStatus('Reconnecting…');
-  await registerUV();
-}
-
-proxySelect.addEventListener('change', async () => {
-  const v = proxySelect.value;
-  if (v === 'byop') { byopRow.classList.remove('hidden'); return; }
-  byopRow.classList.add('hidden');
-  await setBare(v);
+proxySelect.addEventListener("change", () => {
+  currentProxyId = proxySelect.value;
+  localStorage.setItem("frostos-proxy", currentProxyId);
+  byopRow.classList.toggle("hidden", currentProxyId !== "byop");
+  updateProxyStatus();
 });
-byopInput.addEventListener('change', async () => {
-  const v = byopInput.value.trim();
-  if (v) await setBare(v);
+byopInput.addEventListener("change", () => {
+  byopPrefix = byopInput.value.trim();
+  localStorage.setItem("frostos-byop", byopPrefix);
+  updateProxyStatus();
 });
 
-/* Health-check UI */
-function renderRow(row) {
-  const cls = row.ok ? 'ok' : 'bad';
-  const ms  = row.ms != null ? row.ms + 'ms' : '—';
-  return `<div class="bare-row ${cls}">
-    <span class="bare-dot"></span>
-    <span class="bare-name">${row.name}</span>
-    <span class="bare-host">${hostOf(row.url)}</span>
-    <span class="bare-ms">${ms}</span>
-    <span class="bare-reason">${row.reason}</span>
-    <button class="pixel-btn bare-use" data-url="${row.url}" ${row.ok ? '' : 'disabled'}>Use</button>
-  </div>`;
-}
-
-async function runHealthCheck() {
-  if (!bareStatusEl) return;
-  bareStatusEl.innerHTML = BARE_SERVERS.map(s =>
-    renderRow({ ...s, ok: false, ms: null, reason: 'checking…' })
-  ).join('');
-  const rows = await healthCheckAll();
-  rows.sort((a, b) => (b.ok - a.ok) || ((a.ms ?? 9e9) - (b.ms ?? 9e9)));
-  bareStatusEl.innerHTML = rows.map(renderRow).join('');
-  bareStatusEl.querySelectorAll('.bare-use').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const url = btn.dataset.url;
-      proxySelect.value = url;
-      byopRow.classList.add('hidden');
-      await setBare(url);
-    });
+// Health check + pick best
+const healthList = document.getElementById("proxy-health-list");
+function pingProxy(p) {
+  return new Promise(resolve => {
+    if (!p.ping) return resolve({ id: p.id, name: p.name, ok: true, ms: 0 });
+    const img = new Image();
+    const start = performance.now();
+    const done = ok => { clearTimeout(t); resolve({ id: p.id, name: p.name, ok, ms: Math.round(performance.now()-start) }); };
+    const t = setTimeout(() => done(false), 5000);
+    img.onload = () => done(true);
+    img.onerror = () => done(true); // opaque cross-origin still means "reachable"
+    img.src = p.ping + (p.ping.includes("?") ? "&" : "?") + "_=" + Date.now();
   });
 }
-
-if (checkBtn) checkBtn.addEventListener('click', runHealthCheck);
-if (bestBtn)  bestBtn.addEventListener('click', async () => {
-  setProxyStatus('Finding best proxy…');
-  const best = await pickBestBare();
-  if (!best) { setProxyStatus('No live proxies — try BYOB'); return; }
-  proxySelect.value = best.url;
-  byopRow.classList.add('hidden');
-  await setBare(best.url);
-  runHealthCheck();
-});
-
-initProxyDropdown();
+async function healthCheck() {
+  healthList.innerHTML = `<div class="proxy-health-row"><span class="name">Checking...</span></div>`;
+  const results = await Promise.all(PROXIES.map(pingProxy));
+  healthList.innerHTML = "";
+  results.forEach(r => {
+    const row = document.createElement("div");
+    row.className = "proxy-health-row";
+    const cls = !r.ok ? "fail" : r.ms > 1500 ? "slow" : "ok";
+    const label = !r.ok ? "offline" : r.ms + " ms";
+    row.innerHTML = `<span class="name">${escapeHtml(r.name)}</span><span class="ping ${cls}">${label}</span>`;
+    healthList.appendChild(row);
+  });
+  return results;
+}
+async function pickBest() {
+  const results = await healthCheck();
+  const best = results.filter(r => r.ok && r.id !== "direct").sort((a,b) => a.ms - b.ms)[0];
+  if (best) {
+    currentProxyId = best.id;
+    localStorage.setItem("frostos-proxy", currentProxyId);
+    proxySelect.value = currentProxyId;
+    byopRow.classList.add("hidden");
+    updateProxyStatus();
+  }
+}
+document.getElementById("proxy-health-btn").addEventListener("click", healthCheck);
+document.getElementById("proxy-best-btn").addEventListener("click", pickBest);

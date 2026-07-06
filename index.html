@@ -4,93 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FrostOS</title>
-  <meta name="description" content="Your arctic hub for movies, browser tools and more.">
+  <meta name="description" content="Your arctic hub for movies, games, and unrestricted browsing.">
   <link rel="icon" href="penguin.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-
-  <!-- Ultraviolet client bundle + config (must load before script.js) -->
-  <script src="uv/uv.bundle.js"></script>
-  <script src="uv/uv.config.js"></script>
 </head>
 <body>
 
-<!-- ── BOOT SCREEN ─────────────────────────────────────────── -->
+<!-- BOOT SCREEN -->
 <div id="boot-screen">
-  <div id="boot-penguin">
-    <svg viewBox="0 0 64 64" width="88" height="88" fill="none">
-      <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
-      <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
-      <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
-      <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
-      <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
-      <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
-      <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
-      <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
-      <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
-      <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-      <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-    </svg>
-  </div>
+  <div id="boot-penguin"><img src="penguin.svg" width="80" height="80" alt=""></div>
   <h1 id="boot-title">FROST<span>OS</span></h1>
   <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
   <p id="boot-msg">Loading FrostOS...</p>
 </div>
 
-<!-- ── SNOWFLAKES ──────────────────────────────────────────── -->
 <div id="snow-container"></div>
 
-<!-- ── AURORA ──────────────────────────────────────────────── -->
-<div id="aurora">
-  <div class="aurora-blob" id="ab1"></div>
-  <div class="aurora-blob" id="ab2"></div>
-  <div class="aurora-blob" id="ab3"></div>
-</div>
-
-<!-- ── APP ─────────────────────────────────────────────────── -->
+<!-- APP -->
 <div id="app" class="hidden">
 
   <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sidebar-brand">
-      <svg viewBox="0 0 64 64" width="28" height="28" fill="none">
-        <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
-        <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
-        <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
-        <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
-        <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
-        <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
-        <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
-        <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
-        <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
-        <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-        <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-      </svg>
-      <span class="brand-name">Frost<span class="brand-accent">OS</span></span>
+      <img src="penguin.svg" width="28" height="28" alt="">
+      <span class="brand-name">Frost<span class="accent">OS</span></span>
     </div>
 
     <nav class="sidebar-nav">
-      <button class="nav-btn active" data-page="home">
-        <i class="fa-solid fa-house"></i><span>Home</span>
-      </button>
-      <button class="nav-btn" data-page="movies">
-        <i class="fa-solid fa-film"></i><span>Movies</span>
-      </button>
-      <button class="nav-btn" data-page="browser">
-        <i class="fa-solid fa-globe"></i><span>Browser</span>
-      </button>
-      <button class="nav-btn" data-page="settings">
-        <i class="fa-solid fa-gear"></i><span>Settings</span>
-      </button>
+      <button class="nav-btn active" data-page="home"><i class="fa-solid fa-house"></i><span>Home</span></button>
+      <button class="nav-btn" data-page="movies"><i class="fa-solid fa-film"></i><span>Movies</span></button>
+      <button class="nav-btn" data-page="games"><i class="fa-solid fa-gamepad"></i><span>Games</span></button>
+      <button class="nav-btn" data-page="browser"><i class="fa-solid fa-globe"></i><span>Browser</span></button>
+      <button class="nav-btn" data-page="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
     </nav>
 
     <div class="sidebar-footer">
-      <div class="glass-card status-pill">
+      <div class="pixel-card status-pill">
         <span class="status-dot"></span>
         <div>
-          <div class="status-label">Proxy: Ultraviolet</div>
-          <div class="status-sub" id="proxy-status-sub">Connecting…</div>
+          <div class="status-label" id="proxy-status-label">Proxy: Direct</div>
+          <div class="status-sub" id="proxy-status-sub">Ready</div>
         </div>
       </div>
     </div>
@@ -100,8 +55,7 @@
   <div id="main">
     <header id="topbar">
       <div class="topbar-status">
-        <span class="status-dot"></span>
-        Arctic Network Active
+        <span class="status-dot"></span> Arctic Network Active
       </div>
     </header>
 
@@ -111,35 +65,24 @@
       <section id="page-home" class="page active">
         <div class="home-center">
           <div class="home-logo">
-            <svg viewBox="0 0 64 64" width="72" height="72" fill="none">
-              <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
-              <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
-              <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
-              <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
-              <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
-              <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
-              <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
-              <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
-              <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
-              <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-              <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-            </svg>
+            <img src="penguin.svg" width="72" height="72" alt="" class="penguin-bob">
             <h1 class="home-title">Frost<span>OS</span></h1>
           </div>
 
-          <div class="home-search glass-card">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <div class="pixel-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="home-search-input" placeholder="Search the web">
             <button id="home-search-btn"><i class="fa-solid fa-arrow-right"></i></button>
           </div>
 
           <div class="home-pills">
-            <button class="pill" data-page="movies"><i class="fa-solid fa-film"></i> Movies</button>
-            <button class="pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
-            <button class="pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+            <button class="pixel-pill" data-page="movies"><i class="fa-solid fa-film"></i> Movies</button>
+            <button class="pixel-pill" data-page="games"><i class="fa-solid fa-gamepad"></i> Games</button>
+            <button class="pixel-pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
+            <button class="pixel-pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
           </div>
 
-          <div class="home-bulletin glass-card">
+          <div class="pixel-card home-bulletin">
             <div class="bulletin-col">
               <div class="bulletin-label cyan">Frost Bulletin</div>
               <p>Arctic Network active.<br>Enjoy the site! 🐧</p>
@@ -159,13 +102,34 @@
           <div class="eyebrow purple">Movies</div>
           <h2>Browse &amp; Watch</h2>
         </div>
-        <div class="glass-card iframe-shell">
-          <div class="iframe-placeholder" id="movies-placeholder">
-            <i class="fa-solid fa-film"></i>
-            <p>Movie player goes here.</p>
-            <small>Configure a source in Settings → Movie Source</small>
+        <div class="pixel-card iframe-shell">
+          <iframe id="movies-iframe" src="about:blank" allowfullscreen title="Movies"></iframe>
+        </div>
+      </section>
+
+      <!-- GAMES -->
+      <section id="page-games" class="page">
+        <div class="page-header games-header">
+          <div>
+            <div class="eyebrow cyan">Games</div>
+            <h2>Play In-Browser</h2>
           </div>
-          <iframe id="movies-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
+          <div class="games-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="games-search" placeholder="Search games...">
+          </div>
+        </div>
+        <div id="games-grid" class="games-grid"></div>
+        <div id="game-modal" class="game-modal hidden">
+          <div class="game-modal-inner pixel-card">
+            <div class="game-modal-header">
+              <span id="game-modal-title">Game</span>
+              <button id="game-modal-close" class="pixel-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="game-modal-body">
+              <iframe id="game-iframe" src="about:blank" allowfullscreen allow="autoplay; fullscreen; gamepad" title="Game"></iframe>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -175,17 +139,14 @@
           <div class="eyebrow cyan">Browser</div>
           <h2>Frost Browser</h2>
         </div>
-        <div class="glass-card browser-shell">
-          <!-- Tab strip -->
+        <div class="pixel-card browser-shell">
           <div class="browser-tabs" id="browser-tabs">
             <div class="b-tab active" data-id="1">
-              <i class="fa-solid fa-snowflake"></i>
-              <span>New Tab</span>
+              <i class="fa-solid fa-snowflake"></i><span>New Tab</span>
               <i class="fa-solid fa-xmark tab-close"></i>
             </div>
             <button id="add-tab-btn"><i class="fa-solid fa-plus"></i></button>
           </div>
-          <!-- Address bar -->
           <div class="browser-bar">
             <button class="bar-btn" id="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
             <button class="bar-btn" id="fwd-btn"><i class="fa-solid fa-arrow-right"></i></button>
@@ -196,13 +157,13 @@
               <button id="go-btn"><i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
-          <!-- Viewport -->
           <div class="browser-viewport">
             <div id="browser-placeholder">
               <i class="fa-solid fa-globe"></i>
               <p>Enter an address above.</p>
+              <small>Pick a proxy in Settings for restricted sites</small>
             </div>
-            <iframe id="browser-iframe" src="about:blank" class="hidden"></iframe>
+            <iframe id="browser-iframe" src="about:blank" class="hidden" allowfullscreen title="Browser"></iframe>
           </div>
         </div>
       </section>
@@ -214,8 +175,9 @@
           <h2>Settings</h2>
         </div>
         <div class="settings-grid">
+
           <!-- General -->
-          <div class="glass-card settings-card">
+          <div class="pixel-card settings-card">
             <div class="settings-card-title"><i class="fa-solid fa-sliders"></i> General</div>
             <div class="setting-row">
               <div class="setting-info">
@@ -248,55 +210,30 @@
           </div>
 
           <!-- Proxy -->
-          <div class="glass-card settings-card">
+          <div class="pixel-card settings-card">
             <div class="settings-card-title"><i class="fa-solid fa-network-wired"></i> Proxy</div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-name">Bare Server</div>
-                <div class="setting-desc">Ultraviolet backend URL</div>
+                <div class="setting-name">Proxy Source</div>
+                <div class="setting-desc">Pick one, auto-select best, or use direct</div>
               </div>
               <select id="proxy-select" class="frost-select"></select>
             </div>
             <div class="setting-row hidden" id="byop-row">
-              <input type="text" id="byop-input" class="frost-input"
-                     placeholder="https://your-bare-server.example.com/">
+              <input type="text" id="byop-input" class="frost-input" placeholder="https://your-proxy.example/?url=">
             </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Active</div>
-                <div class="setting-desc"><code id="active-bare">—</code></div>
-              </div>
+            <div class="setting-row proxy-actions">
+              <button class="pixel-btn" id="proxy-health-btn"><i class="fa-solid fa-heart-pulse"></i> Health check</button>
+              <button class="pixel-btn" id="proxy-best-btn"><i class="fa-solid fa-bolt"></i> Pick best</button>
             </div>
-            <div class="setting-row bare-actions">
-              <button class="pixel-btn" id="bare-check-btn">
-                <i class="fa-solid fa-heart-pulse"></i> Health check
-              </button>
-              <button class="pixel-btn" id="bare-best-btn">
-                <i class="fa-solid fa-bolt"></i> Pick best
-              </button>
-            </div>
-            <div class="bare-status" id="bare-status"></div>
+            <div id="proxy-health-list" class="proxy-health-list"></div>
           </div>
 
           <!-- Account -->
-          <div class="glass-card settings-card">
+          <div class="pixel-card settings-card">
             <div class="settings-card-title"><i class="fa-solid fa-user"></i> Account</div>
             <div class="account-block">
-              <div class="account-avatar">
-                <svg viewBox="0 0 64 64" width="32" height="32" fill="none">
-                  <ellipse cx="32" cy="36" rx="20" ry="24" fill="#0F2138"/>
-                  <ellipse cx="32" cy="40" rx="12" ry="17" fill="#F4FAFC"/>
-                  <ellipse cx="32" cy="14" rx="11" ry="11" fill="#0F2138"/>
-                  <ellipse cx="32" cy="17" rx="6.5" ry="6" fill="#F4FAFC"/>
-                  <circle cx="29" cy="13" r="1.6" fill="#0A1628"/>
-                  <circle cx="35" cy="13" r="1.6" fill="#0A1628"/>
-                  <path d="M31 16 L33 16 L32 19 Z" fill="#F5A623"/>
-                  <ellipse cx="20" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(-18 20 34)"/>
-                  <ellipse cx="44" cy="34" rx="4" ry="9" fill="#0F2138" transform="rotate(18 44 34)"/>
-                  <ellipse cx="26" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-                  <ellipse cx="38" cy="60" rx="5" ry="2.5" fill="#F5A623"/>
-                </svg>
-              </div>
+              <div class="account-avatar"><img src="penguin.svg" width="32" height="32" alt=""></div>
               <div>
                 <div class="account-name">Guest Penguin</div>
                 <div class="account-sub">Not signed in</div>
@@ -305,7 +242,7 @@
           </div>
 
           <!-- Notifications -->
-          <div class="glass-card settings-card">
+          <div class="pixel-card settings-card">
             <div class="settings-card-title"><i class="fa-solid fa-bell"></i> Notifications</div>
             <div class="setting-row">
               <div class="setting-info">
