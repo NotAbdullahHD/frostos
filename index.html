@@ -6,7 +6,7 @@
   <title>FrostOS</title>
   <meta name="description" content="Your arctic hub for movies, browser tools and more.">
   <link rel="icon" href="penguin.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 
@@ -202,7 +202,7 @@
               <i class="fa-solid fa-globe"></i>
               <p>Enter an address above.</p>
             </div>
-            <iframe id="browser-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
+            <iframe id="browser-iframe" src="about:blank" class="hidden"></iframe>
           </div>
         </div>
       </section>
@@ -255,14 +255,27 @@
                 <div class="setting-name">Bare Server</div>
                 <div class="setting-desc">Ultraviolet backend URL</div>
               </div>
-              <select id="proxy-select" class="frost-select">
-                <option value="default">Default (tomp.io)</option>
-                <option value="byop">Custom (BYOB)</option>
-              </select>
+              <select id="proxy-select" class="frost-select"></select>
             </div>
             <div class="setting-row hidden" id="byop-row">
-              <input type="text" id="byop-input" class="frost-input" placeholder="https://your-bare-server.example.com/">
+              <input type="text" id="byop-input" class="frost-input"
+                     placeholder="https://your-bare-server.example.com/">
             </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Active</div>
+                <div class="setting-desc"><code id="active-bare">—</code></div>
+              </div>
+            </div>
+            <div class="setting-row bare-actions">
+              <button class="pixel-btn" id="bare-check-btn">
+                <i class="fa-solid fa-heart-pulse"></i> Health check
+              </button>
+              <button class="pixel-btn" id="bare-best-btn">
+                <i class="fa-solid fa-bolt"></i> Pick best
+              </button>
+            </div>
+            <div class="bare-status" id="bare-status"></div>
           </div>
 
           <!-- Account -->

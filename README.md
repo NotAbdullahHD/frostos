@@ -1,59 +1,127 @@
-# 🐧 FrostOS
+# FrostOS
 
-An Arctic-themed pixel hub featuring an unblocked mini-browser powered by **Ultraviolet**, a native movie player, and sleek desktop customization.
+Pixel/Minecraft-themed arctic hub with movies, a mini web browser, and
+settings — powered by [Ultraviolet](https://github.com/titaniumnetwork-dev/Ultraviolet)
+so browsing works from inside the app.
 
 ---
 
-## 🛠️ Project Structure
+## Requirements
 
-```text
-frostos/
-├── index.html     # Core OS dashboard markup
-├── style.css      # CSS styles and glassmorphism interface
-├── script.js      # Main OS application logic
-├── penguin.svg    # Custom vector graphic asset
-├── sw.js          # Root Service Worker handing off /service/* requests to Ultraviolet
-└── uv/            # Ultraviolet client bundle files:
-    ├── uv.bundle.js, uv.handler.js, uv.client.js
-    └── uv.sw.js, uv.config.js
+Ultraviolet uses a Service Worker, so the site MUST be served over:
+
+- **HTTPS**, OR
+- **`localhost` / `127.0.0.1`** for local testing.
+
+Opening `index.html` directly with a `file://` URL will not work.
+
+---
+
+## Deploy the static frontend
+
+Any static host works: **GitHub Pages, Cloudflare Pages, Netlify, Vercel**.
+
+The bundle must be served from the site root so that `/sw.js`, `/uv/…`,
+and `/service/…` resolve. Just upload every file in this repo as-is.
+
+Local dev:
+
+```bash
+npx serve .
+# then open http://localhost:3000
 ```
 
 ---
 
-## 📋 Requirements & Setup Constraints
+## Backend: Bare server
 
-Because Ultraviolet relies heavily on browser Service Workers, your deployment environment **must** meet the following three rules:
+Ultraviolet is a client-side proxy — the actual HTTP fetching happens on
+a small backend called a **Bare server**. FrostOS ships with a list of
+known public Bare servers, and Settings → Proxy has:
 
-1. **HTTPS Connection Required:** Service Workers will strictly fail to register over unencrypted `http://` protocols (except on `localhost`).
-2. **Root Level Deployment:** Paths within `uv/uv.config.js` and `sw.js` expect to be served from the absolute site root (`/`). 
-   * *⚠️ GitHub Pages Warning:* If you host this as a project subpath (e.g., `username.github.io/frostos/`), UV will break. You must deploy it to a User/Org site root (`username.github.io`), link a **Custom Domain**, or manually rewrite all paths inside your configuration files.
-3. **A Active Bare Server:** Ultraviolet handles front-end rewriting but requires a backend "Bare Server" (TompHTTP) to forward actual web traffic.
+- **Health check** — pings every server, shows latency + status.
+- **Pick best** — auto-selects the fastest live server.
+- **Custom (BYOB)** — paste your own Bare server URL.
+
+Public servers come and go. For a reliable experience, run your own.
+
+### Option A — Cloudflare Workers (recommended, free)
+
+Deploy [`@tomphttp/bare-server-cloudflare`](https://www.npmjs.com/package/@tomphttp/bare-server-cloudflare):
+
+```bash
+npm create cloudflare@latest frostos-bare -- \
+  --type=hello-world --ts=false --git=false --deploy=false
+cd frostos-bare
+npm install @tomphttp/bare-server-cloudflare
+```
+
+Replace `src/index.js` with:
+
+```js
+import { createBareServer } from '@tomphttp/bare-server-cloudflare';
+const bare = createBareServer('/');
+export default {
+  fetch(request, env, ctx) {
+    if (bare.shouldRoute(request)) return bare.routeRequest(request);
+    return new Response('FrostOS bare server', { status: 200 });
+  },
+};
+```
+
+Then:
+
+```bash
+npx wrangler deploy
+```
+
+Wrangler prints a URL like `https://frostos-bare.yourname.workers.dev`.
+Open FrostOS → Settings → Proxy → **Custom (BYOB)** and paste it
+(trailing slash required: `https://frostos-bare.yourname.workers.dev/`).
+
+### Option B — Node.js host (Render, Railway, Fly, VPS)
+
+```bash
+npm install @tomphttp/bare-server-node
+```
+
+```js
+import http from 'node:http';
+import { createBareServer } from '@tomphttp/bare-server-node';
+const bare = createBareServer('/');
+http.createServer((req, res) => {
+  if (bare.shouldRoute(req)) return bare.routeRequest(req, res);
+  res.writeHead(200); res.end('FrostOS bare server');
+}).listen(process.env.PORT || 8080);
+```
+
+Deploy, then paste the HTTPS URL into Settings → Proxy → Custom (BYOB).
 
 ---
 
-## 🌐 Configuring Your Bare Server (Backend)
+## How the pieces fit
 
-The default backend URL defined inside `uv/uv.config.js` points to a placeholder address (`https://tomp.io/bare-server/`). Because public bare servers cycle frequently, you should run your own backend instance.
+```
+Page (script.js) ──▶ /sw.js?bare=<url>            (registration)
+Iframe /service/<enc>  ──▶ Service Worker /sw.js
+                          └▶ UVServiceWorker
+                                └▶ fetch → <Bare server> → real site
+```
 
-### Deployment Options:
-* **Cloudflare Workers:** Utilize `@tomphttp/bare-server-cloudflare`
-* **Node.js (Render / Fly.io / VPS):** Utilize `@tomphttp/bare-server-node`
-* **Deno Deploy:** Utilize `bare-server-deno`
-
-### Connecting it to FrostOS:
-Once you have your live Bare Server URL ready, you can activate it in one of two ways:
-* Hardcode your link directly into the `bare:` attribute field inside `uv/uv.config.js`.
-* Or go to **FrostOS UI → Settings → Proxy → Custom (BYOB)**, paste your link, and reload the application!
+The service worker can't read `localStorage`, so the chosen Bare URL is
+passed to it via `?bare=` on registration; changing the proxy in
+Settings unregisters the old worker and registers a new one.
 
 ---
 
-## 💻 Local Testing & Development
+## Files
 
-You can test Ultraviolet locally without an HTTPS certificate because modern web browsers relax security restrictions on localhost.
-
-1. Open your terminal in the project directory.
-2. Spin up a quick local web server:
-   ```bash
-   npx serve .
-   ```
-3. Open the printed `http://localhost:PORT` address in your browser.
+```
+index.html         UI
+style.css          Pixel/Minecraft theme
+script.js          App logic, boot, proxy health checks
+sw.js              Root service worker (routes /service/* to UV)
+penguin.svg        Pixel penguin
+uv/                Ultraviolet runtime (bundle/handler/client/sw/config)
+README.md          This file
+```
