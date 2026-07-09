@@ -4,31 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FrostOS</title>
-  <meta name="description" content="Your arctic hub for movies, games, and unrestricted browsing.">
-  <link rel="icon" href="penguin.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <script src="uv/uv.bundle.js"></script>
+  <script src="uv/uv.config.js"></script>
 </head>
 <body>
 
-<!-- BOOT SCREEN -->
+<!-- BOOT -->
 <div id="boot-screen">
-  <div id="boot-penguin"><img src="penguin.svg" width="80" height="80" alt=""></div>
+  <div id="boot-penguin">
+    <svg viewBox="0 0 64 64" width="88" height="88" fill="none" shape-rendering="crispEdges">
+      <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+      <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+      <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+      <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+      <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+      <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+      <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+      <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+      <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+      <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+      <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+    </svg>
+  </div>
   <h1 id="boot-title">FROST<span>OS</span></h1>
   <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
   <p id="boot-msg">Loading FrostOS...</p>
 </div>
 
+<!-- SNOW -->
 <div id="snow-container"></div>
 
 <!-- APP -->
 <div id="app" class="hidden">
-
-  <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sidebar-brand">
-      <img src="penguin.svg" width="28" height="28" alt="">
+      <svg viewBox="0 0 64 64" width="28" height="28" fill="none" shape-rendering="crispEdges">
+        <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+        <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+        <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+        <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+        <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+        <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+        <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+        <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+        <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+        <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+        <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+      </svg>
       <span class="brand-name">Frost<span class="accent">OS</span></span>
     </div>
 
@@ -41,21 +67,22 @@
     </nav>
 
     <div class="sidebar-footer">
+      <button class="nav-btn" id="radio-open-btn"><i class="fa-solid fa-radio"></i><span>FrostRadio</span></button>
       <div class="pixel-card status-pill">
         <span class="status-dot"></span>
         <div>
-          <div class="status-label" id="proxy-status-label">Proxy: Direct</div>
-          <div class="status-sub" id="proxy-status-sub">Ready</div>
+          <div class="status-label" id="proxy-status-label">Proxy: CORS</div>
+          <div class="status-sub">Connected</div>
         </div>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <div id="main">
     <header id="topbar">
       <div class="topbar-status">
-        <span class="status-dot"></span> Arctic Network Active
+        <span class="status-dot"></span>
+        Arctic Network Active
       </div>
     </header>
 
@@ -64,24 +91,33 @@
       <!-- HOME -->
       <section id="page-home" class="page active">
         <div class="home-center">
-          <div class="home-logo">
-            <img src="penguin.svg" width="72" height="72" alt="" class="penguin-bob">
+          <div class="home-logo penguin-bob">
+            <svg viewBox="0 0 64 64" width="72" height="72" fill="none" shape-rendering="crispEdges">
+              <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+              <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+              <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+              <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+              <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+              <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+              <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+              <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+              <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+              <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+              <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+            </svg>
             <h1 class="home-title">Frost<span>OS</span></h1>
           </div>
-
           <div class="pixel-search-wrap">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="home-search-input" placeholder="Search the web">
+            <input type="text" id="home-search-input" placeholder="Search the web...">
             <button id="home-search-btn"><i class="fa-solid fa-arrow-right"></i></button>
           </div>
-
           <div class="home-pills">
             <button class="pixel-pill" data-page="movies"><i class="fa-solid fa-film"></i> Movies</button>
             <button class="pixel-pill" data-page="games"><i class="fa-solid fa-gamepad"></i> Games</button>
             <button class="pixel-pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
             <button class="pixel-pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
           </div>
-
           <div class="pixel-card home-bulletin">
             <div class="bulletin-col">
               <div class="bulletin-label cyan">Frost Bulletin</div>
@@ -99,44 +135,40 @@
       <!-- MOVIES -->
       <section id="page-movies" class="page">
         <div class="page-header">
-          <div class="eyebrow purple">Movies</div>
+          <div class="eyebrow purple">// MOVIES</div>
           <h2>Browse &amp; Watch</h2>
         </div>
         <div class="pixel-card iframe-shell">
-          <iframe id="movies-iframe" src="about:blank" allowfullscreen title="Movies"></iframe>
+          <div class="iframe-placeholder" id="movies-placeholder">
+            <i class="fa-solid fa-film"></i>
+            <p>Click to load movies</p>
+            <button class="pixel-btn" id="load-movies-btn">Load Player</button>
+          </div>
+          <iframe id="movies-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
         </div>
       </section>
 
       <!-- GAMES -->
       <section id="page-games" class="page">
-        <div class="page-header games-header">
-          <div>
-            <div class="eyebrow cyan">Games</div>
-            <h2>Play In-Browser</h2>
-          </div>
-          <div class="games-search-wrap">
+        <div class="page-header">
+          <div class="eyebrow green">// GAMES</div>
+          <h2>Frost Arcade</h2>
+        </div>
+        <div class="games-toolbar">
+          <div class="pixel-search-wrap games-search">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="games-search" placeholder="Search games...">
+            <input type="text" id="game-search-input" placeholder="Search games...">
           </div>
         </div>
-        <div id="games-grid" class="games-grid"></div>
-        <div id="game-modal" class="game-modal hidden">
-          <div class="game-modal-inner pixel-card">
-            <div class="game-modal-header">
-              <span id="game-modal-title">Game</span>
-              <button id="game-modal-close" class="pixel-btn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="game-modal-body">
-              <iframe id="game-iframe" src="about:blank" allowfullscreen allow="autoplay; fullscreen; gamepad" title="Game"></iframe>
-            </div>
-          </div>
+        <div class="games-grid" id="games-grid">
+          <div class="games-loading">Loading games...</div>
         </div>
       </section>
 
       <!-- BROWSER -->
       <section id="page-browser" class="page">
         <div class="page-header">
-          <div class="eyebrow cyan">Browser</div>
+          <div class="eyebrow cyan">// BROWSER</div>
           <h2>Frost Browser</h2>
         </div>
         <div class="pixel-card browser-shell">
@@ -153,17 +185,17 @@
             <button class="bar-btn" id="reload-btn"><i class="fa-solid fa-rotate-right"></i></button>
             <div class="address-wrap">
               <i class="fa-solid fa-lock addr-lock"></i>
-              <input type="text" id="browser-addr" placeholder="Search or enter address" value="https://">
-              <button id="go-btn"><i class="fa-solid fa-arrow-right"></i></button>
+              <input type="text" id="browser-addr" placeholder="Search or enter address..." value="https://">
+              <button id="go-btn">GO</button>
             </div>
           </div>
           <div class="browser-viewport">
             <div id="browser-placeholder">
               <i class="fa-solid fa-globe"></i>
               <p>Enter an address above.</p>
-              <small>Pick a proxy in Settings for restricted sites</small>
             </div>
-            <iframe id="browser-iframe" src="about:blank" class="hidden" allowfullscreen title="Browser"></iframe>
+            <iframe id="browser-iframe" src="about:blank" class="hidden" allowfullscreen
+              allow="clipboard-read; clipboard-write; fullscreen"></iframe>
           </div>
         </div>
       </section>
@@ -171,12 +203,11 @@
       <!-- SETTINGS -->
       <section id="page-settings" class="page">
         <div class="page-header">
-          <div class="eyebrow green">Preferences</div>
-          <h2>Settings</h2>
+          <div class="eyebrow green">// SETTINGS</div>
+          <h2>System Config</h2>
         </div>
         <div class="settings-grid">
 
-          <!-- General -->
           <div class="pixel-card settings-card">
             <div class="settings-card-title"><i class="fa-solid fa-sliders"></i> General</div>
             <div class="setting-row">
@@ -184,10 +215,10 @@
                 <div class="setting-name">Tab Cloaking</div>
                 <div class="setting-desc">Disguise the browser tab</div>
               </div>
-              <label class="toggle"><input type="checkbox" id="tab-cloak-toggle"><span class="slider"></span></label>
+              <label class="toggle"><input type="checkbox" id="cloak-toggle"><span class="slider"></span></label>
             </div>
-            <div class="setting-row cloak-options hidden" id="cloak-options">
-              <select id="cloak-select" class="frost-select">
+            <div class="setting-row hidden" id="cloak-options">
+              <select id="cloak-select" class="frost-select" style="width:100%">
                 <option value="none">Disabled</option>
                 <option value="google">Google Search</option>
                 <option value="drive">Google Drive</option>
@@ -202,67 +233,99 @@
                 <div class="setting-desc">Default for home search</div>
               </div>
               <select id="engine-select" class="frost-select">
+                <option value="duckduckgo">DuckDuckGo</option>
                 <option value="google">Google</option>
                 <option value="bing">Bing</option>
-                <option value="duckduckgo">DuckDuckGo</option>
               </select>
             </div>
           </div>
 
-          <!-- Proxy -->
           <div class="pixel-card settings-card">
-            <div class="settings-card-title"><i class="fa-solid fa-network-wired"></i> Proxy</div>
+            <div class="settings-card-title"><i class="fa-solid fa-network-wired"></i> Proxy Engine</div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-name">Proxy Source</div>
-                <div class="setting-desc">Pick one, auto-select best, or use direct</div>
+                <div class="setting-name">Engine</div>
+                <div class="setting-desc" id="proxy-desc">Fast fallback for many sites</div>
               </div>
-              <select id="proxy-select" class="frost-select"></select>
+              <select id="proxy-engine-select" class="frost-select">
+                <option value="cors">Simple CORS</option>
+                <option value="ultraviolet">Ultraviolet</option>
+                <option value="rammerhead">Rammerhead</option>
+                <option value="dipnix">Dipnix</option>
+              </select>
             </div>
-            <div class="setting-row hidden" id="byop-row">
-              <input type="text" id="byop-input" class="frost-input" placeholder="https://your-proxy.example/?url=">
-            </div>
-            <div class="setting-row proxy-actions">
-              <button class="pixel-btn" id="proxy-health-btn"><i class="fa-solid fa-heart-pulse"></i> Health check</button>
-              <button class="pixel-btn" id="proxy-best-btn"><i class="fa-solid fa-bolt"></i> Pick best</button>
-            </div>
-            <div id="proxy-health-list" class="proxy-health-list"></div>
-          </div>
-
-          <!-- Account -->
-          <div class="pixel-card settings-card">
-            <div class="settings-card-title"><i class="fa-solid fa-user"></i> Account</div>
-            <div class="account-block">
-              <div class="account-avatar"><img src="penguin.svg" width="32" height="32" alt=""></div>
-              <div>
-                <div class="account-name">Guest Penguin</div>
-                <div class="account-sub">Not signed in</div>
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div class="setting-info">
+                <div class="setting-name">Proxy Backend URL</div>
+                <div class="setting-desc">Public gateway or your own server</div>
               </div>
+              <input type="text" id="proxy-backend-input" class="frost-input" placeholder="https://corsproxy.io/?url=">
+              <button class="pixel-btn" id="reset-proxy-btn" style="align-self:flex-start;margin-top:4px">Reset Default</button>
             </div>
           </div>
 
-          <!-- Notifications -->
           <div class="pixel-card settings-card">
-            <div class="settings-card-title"><i class="fa-solid fa-bell"></i> Notifications</div>
+            <div class="settings-card-title"><i class="fa-solid fa-palette"></i> Theme</div>
+            <div class="theme-grid" id="theme-grid"></div>
+          </div>
+
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-eye-slash"></i> Tab Cloaking</div>
             <div class="setting-row">
               <div class="setting-info">
-                <div class="setting-name">System Alerts</div>
-                <div class="setting-desc">Show FrostOS updates</div>
+                <div class="setting-name">Account</div>
+                <div class="setting-desc">Guest Penguin · Not signed in</div>
               </div>
-              <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">New Releases</div>
-                <div class="setting-desc">Get notified of new content</div>
-              </div>
-              <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+              <svg viewBox="0 0 64 64" width="36" height="36" fill="none" shape-rendering="crispEdges">
+                <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+                <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+                <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+                <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+                <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+                <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+                <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+                <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+                <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+                <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+                <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+              </svg>
             </div>
           </div>
+
         </div>
       </section>
-
     </main>
+  </div>
+</div>
+
+<!-- GAME WINDOWS LAYER -->
+<div id="game-windows-layer"></div>
+
+<!-- FROST RADIO -->
+<div id="frost-radio" class="hidden">
+  <audio id="radio-audio" preload="none"></audio>
+  <div class="fr-header">
+    <div class="fr-title"><i class="fa-solid fa-radio"></i><span>FrostRadio</span><span class="fr-live hidden" id="radio-live">● LIVE</span></div>
+    <div class="fr-header-actions">
+      <button class="fr-icon-btn" id="radio-minimize-btn"><i class="fa-solid fa-chevron-down"></i></button>
+      <button class="fr-icon-btn" id="radio-close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div id="radio-body">
+    <select class="frost-select" id="radio-station-select" style="width:100%">
+      <option value="lofi">Lofi Chill</option>
+      <option value="synth">Synthwave</option>
+      <option value="chillhop">Chillhop</option>
+      <option value="jazz">Smooth Jazz</option>
+      <option value="classic">Classical</option>
+    </select>
+    <div class="fr-controls">
+      <button class="pixel-btn" id="radio-play-btn"><i class="fa-solid fa-play"></i> Play</button>
+      <div class="fr-vol">
+        <i class="fa-solid fa-volume-low"></i>
+        <input type="range" id="radio-vol" min="0" max="1" step="0.05" value="0.6">
+      </div>
+    </div>
   </div>
 </div>
 
