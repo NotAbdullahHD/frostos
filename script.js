@@ -110,6 +110,8 @@ function initAll() {
   initSettings();
   initRadio();
   updateProxyLabel();
+  initWelcomeModal();
+  initPanicKey();
 }
 
 /* ── Theme ───────────────────────────────────────────────────── */
@@ -488,4 +490,74 @@ function initRadio() {
       liveTag.classList.add('hidden');
     }
   });
+}
+
+/* ── Welcome Modal ─────────────────────────────────────────── */
+function initWelcomeModal() {
+  const overlay = document.getElementById('welcome-modal');
+  const closeBtn = document.getElementById('welcome-close-btn');
+  const tabs = document.querySelectorAll('.modal-tab');
+  const contents = document.querySelectorAll('.modal-tab-content');
+
+  // Show every visit
+  overlay.classList.remove('hidden');
+
+  // Tab switching
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('mtab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Close
+  closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+}
+
+document.addEventListener('DOMContentLoaded', () => {});
+
+/* ── Panic Key ─────────────────────────────────────────────── */
+function initPanicKey() {
+  const keySelect  = document.getElementById('panic-key-select');
+  const urlInput   = document.getElementById('panic-url-input');
+  const testBtn    = document.getElementById('panic-test-btn');
+
+  // Restore saved values
+  const savedKey = localStorage.getItem('frostos-panic-key') || 'Escape';
+  const savedUrl = localStorage.getItem('frostos-panic-url') || 'https://www.google.com';
+  keySelect.value  = savedKey;
+  urlInput.value   = savedUrl;
+
+  // Save on change
+  keySelect.addEventListener('change', () => {
+    localStorage.setItem('frostos-panic-key', keySelect.value);
+    registerPanicListener();
+  });
+  urlInput.addEventListener('change', () => {
+    localStorage.setItem('frostos-panic-url', urlInput.value || 'https://www.google.com');
+  });
+
+  // Test button
+  testBtn.addEventListener('click', triggerPanic);
+
+  registerPanicListener();
+}
+
+function registerPanicListener() {
+  // Remove old listener then add fresh one
+  document.removeEventListener('keydown', panicHandler);
+  document.addEventListener('keydown', panicHandler);
+}
+
+function panicHandler(e) {
+  const key = localStorage.getItem('frostos-panic-key') || 'Escape';
+  if (e.key === key) triggerPanic();
+}
+
+function triggerPanic() {
+  const url = localStorage.getItem('frostos-panic-url') || 'https://www.google.com';
+  window.location.replace(url);
 }
