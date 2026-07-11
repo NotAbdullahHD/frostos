@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FrostOS</title>
-  <link rel="icon" href="penguin.svg">
+  <link rel="icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -67,7 +67,6 @@
     </nav>
 
     <div class="sidebar-footer">
-      <button class="nav-btn" id="radio-open-btn"><i class="fa-solid fa-radio"></i><span>FrostRadio</span></button>
       <div class="pixel-card status-pill">
         <span class="status-dot"></span>
         <div>
@@ -118,17 +117,46 @@
             <button class="pixel-pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
             <button class="pixel-pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
           </div>
-          <div class="pixel-card home-bulletin">
-            <div class="bulletin-col">
-              <div class="bulletin-label cyan">Frost Bulletin</div>
-              <p>Arctic Network active.<br>Enjoy the site! 🐧</p>
+          <div class="home-bottom-row">
+            <!-- Jukebox disc player -->
+            <div class="pixel-card jukebox-card">
+              <div class="jukebox-disc-wrap" id="jukebox-disc-wrap">
+                <div class="jukebox-disc" id="jukebox-disc">
+                  <div class="disc-ring r1"></div>
+                  <div class="disc-ring r2"></div>
+                  <div class="disc-ring r3"></div>
+                  <div class="disc-center"></div>
+                </div>
+              </div>
+              <div class="jukebox-info">
+                <div class="bulletin-label cyan">🎵 FrostRadio</div>
+                <div class="jukebox-station" id="jukebox-station-name">Lofi Chill</div>
+                <div class="jukebox-controls">
+                  <button class="pixel-btn jukebox-play-btn" id="jukebox-play-btn">▶ Play</button>
+                  <select class="frost-select jukebox-select" id="jukebox-station-select">
+                    <option value="lofi">Lofi Chill</option>
+                    <option value="synth">Synthwave</option>
+                    <option value="chillhop">Chillhop</option>
+                    <option value="jazz">Smooth Jazz</option>
+                    <option value="classic">Classical</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div class="bulletin-divider"></div>
-            <div class="bulletin-col">
-              <div class="bulletin-label green">Status</div>
-              <p><span class="status-dot inline"></span> All systems online</p>
+            <!-- Bulletin -->
+            <div class="pixel-card bulletin-card">
+              <div class="bulletin-col">
+                <div class="bulletin-label cyan">[ FROST BULLETIN ]</div>
+                <p>Arctic Network active.<br>Enjoy the site! 🐧</p>
+              </div>
+              <div class="bulletin-divider"></div>
+              <div class="bulletin-col">
+                <div class="bulletin-label green">[ STATUS ]</div>
+                <p><span class="status-dot inline"></span> All systems online</p>
+              </div>
             </div>
           </div>
+          <audio id="jukebox-audio" preload="none"></audio>
         </div>
       </section>
 
@@ -145,6 +173,37 @@
             <button class="pixel-btn" id="load-movies-btn">Load Player</button>
           </div>
           <iframe id="movies-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-person-running"></i> 🚨 Panic Key</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Hotkey</div>
+                <div class="setting-desc">Press to instantly escape tab</div>
+              </div>
+              <select id="panic-key-select" class="frost-select">
+                <option value="Escape">Escape</option>
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F10">F10</option>
+                <option value="F11">F11</option>
+              </select>
+            </div>
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div class="setting-info">
+                <div class="setting-name">Redirect URL</div>
+                <div class="setting-desc">Default: Google</div>
+              </div>
+              <input type="text" id="panic-url-input" class="frost-input" placeholder="https://www.google.com">
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Test Panic Key</div>
+                <div class="setting-desc">Try it before you need it</div>
+              </div>
+              <button class="pixel-btn" id="panic-test-btn">Test 🚨</button>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -162,39 +221,6 @@
         </div>
         <div class="games-grid" id="games-grid">
           <div class="games-loading">Loading games...</div>
-          <div class="pixel-card settings-card">
-            <div class="settings-card-title"><i class="fa-solid fa-person-running"></i> 🚨 Panic Key</div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Hotkey</div>
-                <div class="setting-desc">Press to instantly redirect tab</div>
-              </div>
-              <select id="panic-key-select" class="frost-select">
-                <option value="Escape">Escape</option>
-                <option value="F1">F1</option>
-                <option value="F2">F2</option>
-                <option value="F10">F10</option>
-                <option value="F11">F11</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Redirect URL</div>
-                <div class="setting-desc">Where to go when panic key pressed</div>
-              </div>
-            </div>
-            <div class="setting-row">
-              <input type="text" id="panic-url-input" class="frost-input" placeholder="https://www.google.com">
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Test It</div>
-                <div class="setting-desc">Make sure your panic key works</div>
-              </div>
-              <button class="pixel-btn" id="panic-test-btn">Test 🚨</button>
-            </div>
-          </div>
-
         </div>
       </section>
 
@@ -454,12 +480,6 @@
 
 <!-- GAME WINDOWS LAYER -->
 <div id="game-windows-layer"></div>
-
-<!-- FROST RADIO -->
-<div id="frost-radio" class="hidden">
-  <audio id="radio-audio" preload="none"></audio>
-  <div class="fr-header">
-    <div class="fr-title"><i class="fa-solid fa-radio"></i><span>FrostRadio</span><span class="fr-live hidden" id="radio-live">● LIVE</span></div>
     <div class="fr-header-actions">
       <button class="fr-icon-btn" id="radio-minimize-btn"><i class="fa-solid fa-chevron-down"></i></button>
       <button class="fr-icon-btn" id="radio-close-btn"><i class="fa-solid fa-xmark"></i></button>
