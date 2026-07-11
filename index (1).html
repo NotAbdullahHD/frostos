@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FrostOS</title>
+  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="uv/uv.bundle.js"></script>
+  <script src="uv/uv.config.js"></script>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot-screen">
+  <div id="boot-penguin">
+    <svg viewBox="0 0 64 64" width="88" height="88" fill="none" shape-rendering="crispEdges">
+      <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+      <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+      <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+      <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+      <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+      <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+      <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+      <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+      <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+      <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+      <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+    </svg>
+  </div>
+  <h1 id="boot-title">FROST<span>OS</span></h1>
+  <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
+  <p id="boot-msg">Loading FrostOS...</p>
+</div>
+
+<!-- SNOW -->
+<div id="snow-container"></div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <svg viewBox="0 0 64 64" width="28" height="28" fill="none" shape-rendering="crispEdges">
+        <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+        <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+        <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+        <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+        <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+        <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+        <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+        <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+        <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+        <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+        <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+      </svg>
+      <span class="brand-name">Frost<span class="accent">OS</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-page="home"><i class="fa-solid fa-house"></i><span>Home</span></button>
+      <button class="nav-btn" data-page="movies"><i class="fa-solid fa-film"></i><span>Movies</span></button>
+      <button class="nav-btn" data-page="games"><i class="fa-solid fa-gamepad"></i><span>Games</span></button>
+      <button class="nav-btn" data-page="browser"><i class="fa-solid fa-globe"></i><span>Browser</span></button>
+      <button class="nav-btn" data-page="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-btn" id="radio-open-btn"><i class="fa-solid fa-radio"></i><span>FrostRadio</span></button>
+      <div class="pixel-card status-pill">
+        <span class="status-dot"></span>
+        <div>
+          <div class="status-label" id="proxy-status-label">Proxy: CORS</div>
+          <div class="status-sub">Connected</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="main">
+    <header id="topbar">
+      <div class="topbar-status">
+        <span class="status-dot"></span>
+        Arctic Network Active
+      </div>
+    </header>
+
+    <main id="viewport">
+
+      <!-- HOME -->
+      <section id="page-home" class="page active">
+        <div class="home-center">
+          <div class="home-logo penguin-bob">
+            <svg viewBox="0 0 64 64" width="72" height="72" fill="none" shape-rendering="crispEdges">
+              <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+              <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+              <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+              <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+              <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+              <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+              <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+              <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+              <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+              <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+              <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+            </svg>
+            <h1 class="home-title">Frost<span>OS</span></h1>
+          </div>
+          <div class="pixel-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="home-search-input" placeholder="Search the web...">
+            <button id="home-search-btn"><i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div class="home-pills">
+            <button class="pixel-pill" data-page="movies"><i class="fa-solid fa-film"></i> Movies</button>
+            <button class="pixel-pill" data-page="games"><i class="fa-solid fa-gamepad"></i> Games</button>
+            <button class="pixel-pill" data-page="browser"><i class="fa-solid fa-globe"></i> Browser</button>
+            <button class="pixel-pill" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+          </div>
+          <div class="pixel-card home-bulletin">
+            <div class="bulletin-col">
+              <div class="bulletin-label cyan">Frost Bulletin</div>
+              <p>Arctic Network active.<br>Enjoy the site! 🐧</p>
+            </div>
+            <div class="bulletin-divider"></div>
+            <div class="bulletin-col">
+              <div class="bulletin-label green">Status</div>
+              <p><span class="status-dot inline"></span> All systems online</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOVIES -->
+      <section id="page-movies" class="page">
+        <div class="page-header">
+          <div class="eyebrow purple">// MOVIES</div>
+          <h2>Browse &amp; Watch</h2>
+        </div>
+        <div class="pixel-card iframe-shell">
+          <div class="iframe-placeholder" id="movies-placeholder">
+            <i class="fa-solid fa-film"></i>
+            <p>Click to load movies</p>
+            <button class="pixel-btn" id="load-movies-btn">Load Player</button>
+          </div>
+          <iframe id="movies-iframe" src="about:blank" class="hidden" allowfullscreen></iframe>
+        </div>
+      </section>
+
+      <!-- GAMES -->
+      <section id="page-games" class="page">
+        <div class="page-header">
+          <div class="eyebrow green">// GAMES</div>
+          <h2>Frost Arcade</h2>
+        </div>
+        <div class="games-toolbar">
+          <div class="pixel-search-wrap games-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="game-search-input" placeholder="Search games...">
+          </div>
+        </div>
+        <div class="games-grid" id="games-grid">
+          <div class="games-loading">Loading games...</div>
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-person-running"></i> 🚨 Panic Key</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Hotkey</div>
+                <div class="setting-desc">Press to instantly redirect tab</div>
+              </div>
+              <select id="panic-key-select" class="frost-select">
+                <option value="Escape">Escape</option>
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F10">F10</option>
+                <option value="F11">F11</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Redirect URL</div>
+                <div class="setting-desc">Where to go when panic key pressed</div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <input type="text" id="panic-url-input" class="frost-input" placeholder="https://www.google.com">
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Test It</div>
+                <div class="setting-desc">Make sure your panic key works</div>
+              </div>
+              <button class="pixel-btn" id="panic-test-btn">Test 🚨</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- BROWSER -->
+      <section id="page-browser" class="page">
+        <div class="page-header">
+          <div class="eyebrow cyan">// BROWSER</div>
+          <h2>Frost Browser</h2>
+        </div>
+        <div class="pixel-card browser-shell">
+          <div class="browser-tabs" id="browser-tabs">
+            <div class="b-tab active" data-id="1">
+              <i class="fa-solid fa-snowflake"></i><span>New Tab</span>
+              <i class="fa-solid fa-xmark tab-close"></i>
+            </div>
+            <button id="add-tab-btn"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <div class="browser-bar">
+            <button class="bar-btn" id="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="bar-btn" id="fwd-btn"><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="bar-btn" id="reload-btn"><i class="fa-solid fa-rotate-right"></i></button>
+            <div class="address-wrap">
+              <i class="fa-solid fa-lock addr-lock"></i>
+              <input type="text" id="browser-addr" placeholder="Search or enter address..." value="https://">
+              <button id="go-btn">GO</button>
+            </div>
+          </div>
+          <div class="browser-viewport">
+            <iframe id="browser-iframe" src="gust.html" allowfullscreen
+              allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="page-settings" class="page">
+        <div class="page-header">
+          <div class="eyebrow green">// SETTINGS</div>
+          <h2>System Config</h2>
+        </div>
+        <div class="settings-grid">
+
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-sliders"></i> General</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Tab Cloaking</div>
+                <div class="setting-desc">Disguise the browser tab</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="cloak-toggle"><span class="slider"></span></label>
+            </div>
+            <div class="setting-row hidden" id="cloak-options">
+              <select id="cloak-select" class="frost-select" style="width:100%">
+                <option value="none">Disabled</option>
+                <option value="google">Google Search</option>
+                <option value="drive">Google Drive</option>
+                <option value="classroom">Google Classroom</option>
+                <option value="canvas">Canvas LMS</option>
+                <option value="gmail">Gmail</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Search Engine</div>
+                <div class="setting-desc">Default for home search</div>
+              </div>
+              <select id="engine-select" class="frost-select">
+                <option value="duckduckgo">DuckDuckGo</option>
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-network-wired"></i> Proxy Engine</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Engine</div>
+                <div class="setting-desc" id="proxy-desc">Fast fallback for many sites</div>
+              </div>
+              <select id="proxy-engine-select" class="frost-select">
+                <option value="cors">Simple CORS</option>
+                <option value="ultraviolet">Ultraviolet</option>
+                <option value="rammerhead">Rammerhead</option>
+                <option value="dipnix">Dipnix</option>
+              </select>
+            </div>
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div class="setting-info">
+                <div class="setting-name">Proxy Backend URL</div>
+                <div class="setting-desc">Public gateway or your own server</div>
+              </div>
+              <input type="text" id="proxy-backend-input" class="frost-input" placeholder="https://corsproxy.io/?url=">
+              <button class="pixel-btn" id="reset-proxy-btn" style="align-self:flex-start;margin-top:4px">Reset Default</button>
+            </div>
+          </div>
+
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-palette"></i> Theme</div>
+            <div class="theme-grid" id="theme-grid"></div>
+          </div>
+
+          <div class="pixel-card settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-eye-slash"></i> Tab Cloaking</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-name">Account</div>
+                <div class="setting-desc">Guest Penguin · Not signed in</div>
+              </div>
+              <svg viewBox="0 0 64 64" width="36" height="36" fill="none" shape-rendering="crispEdges">
+                <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+                <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+                <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+                <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+                <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+                <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+                <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+                <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+                <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+                <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+                <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+
+<!-- WELCOME MODAL -->
+<div id="welcome-modal" class="modal-overlay">
+  <div class="modal-box pixel-card">
+
+    <div class="modal-header">
+      <svg viewBox="0 0 64 64" width="40" height="40" fill="none" shape-rendering="crispEdges">
+        <rect x="16" y="20" width="32" height="40" fill="#0F2138"/>
+        <rect x="20" y="28" width="24" height="28" fill="#F4FAFC"/>
+        <rect x="18" y="4" width="28" height="22" fill="#0F2138"/>
+        <rect x="22" y="8" width="20" height="14" fill="#F4FAFC"/>
+        <rect x="22" y="10" width="6" height="6" fill="#0A1628"/>
+        <rect x="36" y="10" width="6" height="6" fill="#0A1628"/>
+        <rect x="26" y="18" width="12" height="6" fill="#F5A623"/>
+        <rect x="10" y="24" width="6" height="20" fill="#0F2138"/>
+        <rect x="48" y="24" width="6" height="20" fill="#0F2138"/>
+        <rect x="20" y="58" width="10" height="6" fill="#F5A623"/>
+        <rect x="34" y="58" width="10" height="6" fill="#F5A623"/>
+      </svg>
+      <div>
+        <h2 class="modal-title">Welcome to Frost<span class="accent">OS</span></h2>
+        <p class="modal-subtitle">Your arctic hub for games, movies &amp; more 🐧</p>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="setup">Proxy Setup</button>
+      <button class="modal-tab" data-tab="updates">Updates</button>
+    </div>
+
+    <!-- SETUP TAB -->
+    <div class="modal-tab-content active" id="mtab-setup">
+      <div class="modal-section">
+        <div class="modal-section-title"><i class="fa-solid fa-network-wired"></i> What is a Proxy?</div>
+        <p class="modal-text">FrostOS routes your browser traffic through a proxy so you can access sites freely. By default we use a public CORS proxy — it works out of the box but may be slower or blocked on some networks.</p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title"><i class="fa-solid fa-shield-halved"></i> BYOP — Bring Your Own Proxy</div>
+        <p class="modal-text">For the best experience, deploy your own proxy backend. This gives you faster speeds and more reliability. Three options:</p>
+        <div class="modal-proxy-list">
+          <div class="modal-proxy-item">
+            <span class="proxy-tag cyan">Ultraviolet</span>
+            <span class="modal-text">Full web proxy. Deploy on Cloudflare Workers or any Node host. Best compatibility.</span>
+          </div>
+          <div class="modal-proxy-item">
+            <span class="proxy-tag green">Rammerhead</span>
+            <span class="modal-text">Session-based proxy. Great for sites that block standard proxies.</span>
+          </div>
+          <div class="modal-proxy-item">
+            <span class="proxy-tag violet">CORS Proxy</span>
+            <span class="modal-text">Simplest setup. Deploy <code>corsproxy.io</code> or similar on any server.</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title"><i class="fa-solid fa-gear"></i> How to Set It Up</div>
+        <div class="modal-steps">
+          <div class="modal-step"><span class="step-num">1</span><span>Deploy your proxy backend (Ultraviolet / Rammerhead / CORS)</span></div>
+          <div class="modal-step"><span class="step-num">2</span><span>Open <b>Settings → Proxy Engine</b> in FrostOS</span></div>
+          <div class="modal-step"><span class="step-num">3</span><span>Select your engine and paste your backend URL</span></div>
+          <div class="modal-step"><span class="step-num">4</span><span>Browse freely through the Browser tab 🎉</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPDATES TAB -->
+    <div class="modal-tab-content" id="mtab-updates">
+      <div class="updates-list">
+
+        <div class="update-entry">
+          <div class="update-header">
+            <span class="update-version cyan">v1.3</span>
+            <span class="update-date">July 2026</span>
+          </div>
+          <ul class="update-notes">
+            <li>🎨 5 Themes — Arctic, Lava, Forest, Night, Candy</li>
+            <li>🎮 Games page with search &amp; floating draggable game windows</li>
+            <li>🎵 FrostRadio — 5 live stations</li>
+            <li>🌐 4 Proxy engines — CORS, Ultraviolet, Rammerhead, Dipnix</li>
+            <li>🎬 Movies tab powered by proxy</li>
+            <li>🗂️ Collapsible hover sidebar</li>
+            <li>💾 All settings saved across sessions</li>
+          </ul>
+        </div>
+
+        <div class="update-entry">
+          <div class="update-header">
+            <span class="update-version green">v1.2</span>
+            <span class="update-date">July 2026</span>
+          </div>
+          <ul class="update-notes">
+            <li>🔒 Tab cloaking (Google, Drive, Classroom, Canvas, Gmail)</li>
+            <li>🔎 Configurable search engine (Google, Bing, DuckDuckGo)</li>
+            <li>🌍 Frost Browser with tab management</li>
+            <li>❄️ Animated snow &amp; aurora background</li>
+            <li>🐧 Pixel penguin art throughout</li>
+          </ul>
+        </div>
+
+        <div class="update-entry">
+          <div class="update-header">
+            <span class="update-version violet">v1.0</span>
+            <span class="update-date">July 2026</span>
+          </div>
+          <ul class="update-notes">
+            <li>🚀 FrostOS launched</li>
+            <li>🏠 Home page with search bar &amp; quick links</li>
+            <li>🎨 Minecraft / pixel art visual identity</li>
+            <li>⚙️ Settings panel</li>
+            <li>🐧 Boot screen with spinning penguin</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <p class="modal-note"><i class="fa-solid fa-circle-info"></i> This message shows every visit. Configure your proxy in Settings to get started.</p>
+      <button class="pixel-btn" id="welcome-close-btn">Enter FrostOS &nbsp;❄️</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- GAME WINDOWS LAYER -->
+<div id="game-windows-layer"></div>
+
+<!-- FROST RADIO -->
+<div id="frost-radio" class="hidden">
+  <audio id="radio-audio" preload="none"></audio>
+  <div class="fr-header">
+    <div class="fr-title"><i class="fa-solid fa-radio"></i><span>FrostRadio</span><span class="fr-live hidden" id="radio-live">● LIVE</span></div>
+    <div class="fr-header-actions">
+      <button class="fr-icon-btn" id="radio-minimize-btn"><i class="fa-solid fa-chevron-down"></i></button>
+      <button class="fr-icon-btn" id="radio-close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div id="radio-body">
+    <select class="frost-select" id="radio-station-select" style="width:100%">
+      <option value="lofi">Lofi Chill</option>
+      <option value="synth">Synthwave</option>
+      <option value="chillhop">Chillhop</option>
+      <option value="jazz">Smooth Jazz</option>
+      <option value="classic">Classical</option>
+    </select>
+    <div class="fr-controls">
+      <button class="pixel-btn" id="radio-play-btn"><i class="fa-solid fa-play"></i> Play</button>
+      <div class="fr-vol">
+        <i class="fa-solid fa-volume-low"></i>
+        <input type="range" id="radio-vol" min="0" max="1" step="0.05" value="0.6">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
